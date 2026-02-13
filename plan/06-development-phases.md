@@ -1,6 +1,6 @@
 # Development Phases & Milestones
 
-## Phase 1: Server Core (Start here)
+## Phase 1: Server Core (Start here) ✅
 **Goal**: Working server that can apply profiles via Unix socket.
 
 1. Project init: monorepo with bun workspaces
@@ -22,7 +22,7 @@
 
 **Milestone**: Can create profiles and apply them via a test client (e.g. `bun run client.ts`)
 
-## Phase 2: Electron GUI
+## Phase 2: Electron GUI ✅
 **Goal**: Full control of the server through a GUI.
 
 1. Electron skeleton with Bun + manual packaging setup
@@ -33,7 +33,7 @@
 
 **Milestone**: Create, edit, and apply profiles from the GUI. Live sensor readout working.
 
-## Phase 3: Process Watcher
+## Phase 3: Process Watcher ✅
 **Goal**: Server auto-switches profiles based on running processes.
 
 1. Process scanner (/proc reader)
@@ -54,7 +54,7 @@
 
 **Milestone**: `systemctl start fmwk-pwr` works, survives reboot.
 
-## Phase 5: GNOME Extension
+## Phase 5: GNOME Extension ✅
 **Goal**: See and switch profiles from the top bar.
 
 1. Extension skeleton with build pipeline

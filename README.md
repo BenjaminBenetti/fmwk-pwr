@@ -40,6 +40,17 @@ The server exposes a Unix socket IPC interface. Clients send JSON requests and r
 | `@fmwk-pwr/gui` | `packages/gui` | Electron GUI (main/renderer/preload) |
 | `@fmwk-pwr/gnome-extension` | `packages/gnome-extension` | GNOME Shell top bar extension |
 
+## Quick Commands
+
+```sh
+bun install                  # Install all dependencies
+bun run server               # Start the server (requires root)
+bun run gui                  # Build and launch the Electron GUI
+bun run test                 # Run all tests (server + shared + gui)
+bun run typecheck            # Type check all packages
+bun run gui:build            # Build the GUI without launching
+```
+
 ## Development Setup
 
 ### Prerequisites
@@ -67,13 +78,21 @@ sudo ./scripts/install-libryzenadj.sh
 bun run server
 ```
 
-### 4. Run tests
+### 4. Launch the GUI
+
+```sh
+bun run gui
+```
+
+The GUI connects to the server over a Unix socket. Start the server first.
+
+### 5. Run tests
 
 ```sh
 bun run test
 ```
 
-### 5. Type check
+### 6. Type check
 
 ```sh
 bun run typecheck
@@ -102,11 +121,11 @@ fmwk-pwr/
 │   │       ├── detect.ts
 │   │       ├── strategy.ts
 │   │       └── strategies/strix-halo/
-│   ├── gui/                       # Electron GUI (planned)
-│   │   ├── main/
-│   │   ├── renderer/
-│   │   └── preload/
-│   └── gnome-extension/           # GNOME Shell extension (planned)
+│   ├── gui/                       # Electron GUI
+│   │   ├── src/main/              # Main process (socket client, IPC bridge)
+│   │   ├── src/renderer/          # React UI (components, hooks)
+│   │   └── test/main/             # Main process tests
+│   └── gnome-extension/           # GNOME Shell top bar extension
 │       └── src/
 ├── systemd/                       # systemd unit file (planned)
 ├── scripts/

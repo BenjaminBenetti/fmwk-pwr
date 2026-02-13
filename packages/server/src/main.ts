@@ -3,6 +3,7 @@ import { SocketServer } from "./socket/server.js";
 import { createHandler } from "./socket/handler.js";
 import { ProfileManager } from "./profiles/manager.js";
 import { detectHardware } from "./hardware/detect.js";
+import { ProcessWatcher } from "./watcher/watcher.js";
 import type { ServerState } from "./state.js";
 
 // =====================================
@@ -58,16 +59,25 @@ async function main(): Promise<void> {
   const socketServer = new SocketServer(config.socketPath, handler);
   socketServer.start();
 
+  // Start process watcher
+  const watcher = new ProcessWatcher({
+    profileManager,
+    state,
+    intervalMs: config.watcherIntervalMs,
+  });
+  watcher.start();
+
   // =====================================
   // Shutdown
   // =====================================
 
   /**
-   * Gracefully shuts down the server: stops the socket listener,
-   * releases hardware resources (closes libryzenadj handle), and exits.
+   * Gracefully shuts down the server: stops the process watcher, socket
+   * listener, releases hardware resources (closes libryzenadj handle), and exits.
    */
   const shutdown = (): void => {
     console.log("\n[main] Shutting down...");
+    watcher.stop();
     socketServer.stop();
     hardware.destroy();
     console.log("[main] Goodbye");

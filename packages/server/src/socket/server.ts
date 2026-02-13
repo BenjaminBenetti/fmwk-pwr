@@ -1,4 +1,4 @@
-import { unlinkSync, existsSync, mkdirSync } from "node:fs";
+import { unlinkSync, existsSync, mkdirSync, chmodSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Socket } from "bun";
 import { ErrorCode, type Request, type Response, type ErrorResponse } from "@fmwk-pwr/shared";
@@ -84,6 +84,9 @@ export class SocketServer {
         },
       },
     });
+
+    // Allow non-root clients (GUI, GNOME extension) to connect
+    chmodSync(this.socketPath, 0o666);
 
     console.log(`[socket] Listening on ${this.socketPath}`);
   }

@@ -1,0 +1,8 @@
+{
+  "uuid": "fmwk-pwr@fmwk-pwr",
+  "name": "Framework Power",
+  "description": "Power management for Framework Desktop (AMD Strix Halo)",
+  "shell-version": ["45", "46", "47", "48", "49"],
+  "version": 1,
+  "url": "https://github.com/user/fmwk-pwr"
+}

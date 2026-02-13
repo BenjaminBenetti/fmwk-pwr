@@ -1,0 +1,14 @@
+{
+  "name": "@fmwk-pwr/gnome-extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && cp src/metadata.json src/stylesheet.css dist/",
+    "typecheck": "tsc --noEmit",
+    "install-ext": "bun run build && mkdir -p ~/.local/share/gnome-shell/extensions/fmwk-pwr@fmwk-pwr && cp -r dist/* ~/.local/share/gnome-shell/extensions/fmwk-pwr@fmwk-pwr/"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.0"
+  }
+}
