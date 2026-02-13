@@ -1,3 +1,7 @@
+// =====================================
+// Hardware Info
+// =====================================
+
 /** Live hardware sensor readings and active power limits, gathered from HWMON/sysfs and libryzenadj. */
 export interface HardwareInfo {
   /** Current sustained power limit (STAPM) in mW, read via libryzenadj. */

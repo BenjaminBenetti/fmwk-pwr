@@ -31,6 +31,14 @@ const mockHwInfo: HardwareInfo = {
 function createMockHardware(): HardwareStrategy {
   return {
     name: "Mock",
+    hardwareLimits: {
+      minPowerMw: 5000,
+      maxStapmMw: 120000,
+      maxSlowMw: 120000,
+      maxFastMw: 140000,
+      minGpuClockMhz: 200,
+      maxGpuClockMhz: 3000,
+    },
     applyPowerLimits() {},
     async applyGpuClock() {},
     async applyGpuPerfLevel() {},
@@ -41,6 +49,7 @@ function createMockHardware(): HardwareStrategy {
     validateProfile() {
       return [];
     },
+    setHardwareLimits() {},
     destroy() {},
   };
 }

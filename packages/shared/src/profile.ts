@@ -1,3 +1,7 @@
+// =====================================
+// Profile
+// =====================================
+
 /** A saved configuration profile that defines power limits, GPU settings, and process-matching rules. */
 export interface Profile {
   /** Unique identifier, used as the filename on disk (e.g. "balanced.json"). */

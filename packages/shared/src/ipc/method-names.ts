@@ -1,3 +1,7 @@
+// =====================================
+// Method Names
+// =====================================
+
 /** Lookup table of all IPC method name strings, keyed by a friendly identifier. */
 export const Methods = {
   /** List all saved profiles. */
@@ -18,6 +22,10 @@ export const Methods = {
   ConfigGet: "config.get",
   /** Partially update the server configuration. */
   ConfigUpdate: "config.update",
+  /** List available hardware presets. */
+  PresetList: "preset.list",
+  /** Load a hardware preset into the server configuration. */
+  PresetLoad: "preset.load",
 } as const;
 
 /** Union of all valid IPC method name strings (e.g. "profile.list", "status.get"). */

@@ -1,6 +1,0 @@
-{
-  "gpuSysfsPath": "/sys/class/drm/card1/device",
-  "socketPath": "/run/fmwk-pwr/fmwk-pwr.sock",
-  "watcherIntervalMs": 5000,
-  "defaultProfile": "default"
-}

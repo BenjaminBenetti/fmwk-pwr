@@ -1,7 +1,7 @@
 import { describe, expect, test, beforeEach, afterEach } from "bun:test";
 import { mkdirSync, writeFileSync, rmSync, existsSync } from "node:fs";
 import { join } from "node:path";
-import { loadConfig, resolveProfilesDir } from "../../src/config/config.js";
+import { loadConfig, resolveProfilesDir, resolvePresetsDir } from "../../src/config/config.js";
 
 describe("config loader", () => {
   test("loadConfig returns config with all required fields", () => {
@@ -45,6 +45,41 @@ describe("config loader", () => {
     const profilesDir = resolveProfilesDir("");
     expect(typeof profilesDir).toBe("string");
     expect(profilesDir.length).toBeGreaterThan(0);
+  });
+
+  test("loadConfig returns config with hardwareLimits", () => {
+    const { config } = loadConfig();
+    expect(typeof config.hardwareLimits.minPowerMw).toBe("number");
+    expect(config.hardwareLimits.minPowerMw).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.maxStapmMw).toBe("number");
+    expect(config.hardwareLimits.maxStapmMw).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.maxSlowMw).toBe("number");
+    expect(config.hardwareLimits.maxSlowMw).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.maxFastMw).toBe("number");
+    expect(config.hardwareLimits.maxFastMw).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.minGpuClockMhz).toBe("number");
+    expect(config.hardwareLimits.minGpuClockMhz).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.maxGpuClockMhz).toBe("number");
+    expect(config.hardwareLimits.maxGpuClockMhz).toBeGreaterThan(0);
+  });
+
+  test("loadConfig returns config with firstTimeSetup", () => {
+    const { config } = loadConfig();
+    expect(typeof config.firstTimeSetup).toBe("boolean");
+  });
+
+  test("resolvePresetsDir resolves relative to config path", () => {
+    const { configPath } = loadConfig();
+    if (configPath) {
+      const presetsDir = resolvePresetsDir(configPath);
+      expect(presetsDir).toContain("presets");
+    }
+  });
+
+  test("resolvePresetsDir with empty configPath falls back", () => {
+    const presetsDir = resolvePresetsDir("");
+    expect(typeof presetsDir).toBe("string");
+    expect(presetsDir.length).toBeGreaterThan(0);
   });
 });
 

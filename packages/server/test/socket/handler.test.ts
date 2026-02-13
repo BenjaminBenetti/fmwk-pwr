@@ -34,6 +34,15 @@ const mockHwInfo: HardwareInfo = {
 function createMockHardware(): HardwareStrategy {
   return {
     name: "Mock",
+    hardwareLimits: {
+      minPowerMw: 15_000,
+      maxStapmMw: 132_000,
+      maxSlowMw: 154_000,
+      maxFastMw: 170_000,
+      minGpuClockMhz: 200,
+      maxGpuClockMhz: 3_000,
+    },
+    setHardwareLimits() {},
     applyPowerLimits() {},
     async applyGpuClock() {},
     async applyGpuPerfLevel() {},
@@ -54,11 +63,21 @@ function createState(): ServerState {
     activatedBy: "startup",
     lastHwInfo: null,
     lastHwInfoTime: null,
+    configPath: join(import.meta.dir, ".tmp-handler-test", "config.json"),
     config: {
       gpuSysfsPath: "/sys/class/drm/card1/device",
       socketPath: "/run/fmwk-pwr/fmwk-pwr.sock",
       watcherIntervalMs: 5000,
       defaultProfile: "default",
+      firstTimeSetup: true,
+      hardwareLimits: {
+        minPowerMw: 15_000,
+        maxStapmMw: 132_000,
+        maxSlowMw: 154_000,
+        maxFastMw: 170_000,
+        minGpuClockMhz: 200,
+        maxGpuClockMhz: 3_000,
+      },
     },
   };
 }
@@ -69,13 +88,16 @@ function isError(response: unknown): response is ErrorResponse {
 
 describe("message handler", () => {
   const tmpDir = join(import.meta.dir, ".tmp-handler-test");
+  const presetsDir = join(import.meta.dir, ".tmp-handler-presets");
   let handler: (request: Request) => Promise<unknown>;
   let state: ServerState;
   let profileManager: ProfileManager;
 
   beforeEach(() => {
     rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(presetsDir, { recursive: true, force: true });
     mkdirSync(tmpDir, { recursive: true });
+    mkdirSync(presetsDir, { recursive: true });
 
     const defaultProfile = makeProfile({ name: "default" });
     writeFileSync(join(tmpDir, "default.json"), JSON.stringify(defaultProfile));
@@ -84,11 +106,12 @@ describe("message handler", () => {
     profileManager = new ProfileManager(tmpDir, mockHw);
     profileManager.loadAll();
     state = createState();
-    handler = createHandler(profileManager, state);
+    handler = createHandler(profileManager, state, mockHw, presetsDir);
   });
 
   afterEach(() => {
     rmSync(tmpDir, { recursive: true, force: true });
+    rmSync(presetsDir, { recursive: true, force: true });
   });
 
   describe("profile.list", () => {
@@ -392,6 +415,110 @@ describe("message handler", () => {
       });
       expect(isError(response)).toBe(true);
       expect((response as ErrorResponse).error.code).toBe("METHOD_NOT_FOUND");
+    });
+  });
+
+  describe("preset.list", () => {
+    test("returns empty list when no preset files", async () => {
+      const response = await handler({ id: "1", method: Methods.PresetList });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { presets: unknown[] } }).result;
+      expect(result.presets).toHaveLength(0);
+    });
+
+    test("returns presets from JSON files", async () => {
+      const preset = {
+        name: "Framework Desktop",
+        description: "Default limits for Framework Desktop",
+        hardwareLimits: {
+          minPowerMw: 15_000,
+          maxStapmMw: 132_000,
+          maxSlowMw: 154_000,
+          maxFastMw: 170_000,
+          minGpuClockMhz: 200,
+          maxGpuClockMhz: 3_000,
+        },
+      };
+      writeFileSync(join(presetsDir, "framework-desktop.json"), JSON.stringify(preset));
+
+      const response = await handler({ id: "1", method: Methods.PresetList });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { presets: { name: string }[] } }).result;
+      expect(result.presets).toHaveLength(1);
+      expect(result.presets[0].name).toBe("Framework Desktop");
+    });
+  });
+
+  describe("preset.load", () => {
+    const testPreset = {
+      name: "Custom Device",
+      description: "Custom limits",
+      hardwareLimits: {
+        minPowerMw: 10_000,
+        maxStapmMw: 100_000,
+        maxSlowMw: 120_000,
+        maxFastMw: 140_000,
+        minGpuClockMhz: 100,
+        maxGpuClockMhz: 2_500,
+      },
+    };
+
+    test("loads a preset and updates config", async () => {
+      writeFileSync(join(presetsDir, "custom.json"), JSON.stringify(testPreset));
+
+      const response = await handler({
+        id: "1",
+        method: Methods.PresetLoad,
+        params: { name: "Custom Device" },
+      });
+      expect(isError(response)).toBe(false);
+      expect(state.config.hardwareLimits.maxStapmMw).toBe(100_000);
+      expect(state.config.hardwareLimits.minGpuClockMhz).toBe(100);
+    });
+
+    test("sets firstTimeSetup to false", async () => {
+      writeFileSync(join(presetsDir, "custom.json"), JSON.stringify(testPreset));
+      expect(state.config.firstTimeSetup).toBe(true);
+
+      await handler({
+        id: "1",
+        method: Methods.PresetLoad,
+        params: { name: "Custom Device" },
+      });
+      expect(state.config.firstTimeSetup).toBe(false);
+    });
+
+    test("returns error for non-existent preset", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.PresetLoad,
+        params: { name: "nonexistent" },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+
+    test("calls setHardwareLimits on hardware", async () => {
+      writeFileSync(join(presetsDir, "custom.json"), JSON.stringify(testPreset));
+
+      let capturedLimits: unknown = null;
+      const trackingHw = createMockHardware();
+      trackingHw.setHardwareLimits = (limits) => {
+        capturedLimits = limits;
+      };
+
+      const trackingProfileManager = new ProfileManager(tmpDir, trackingHw);
+      trackingProfileManager.loadAll();
+      const trackingState = createState();
+      const trackingHandler = createHandler(trackingProfileManager, trackingState, trackingHw, presetsDir);
+
+      await trackingHandler({
+        id: "1",
+        method: Methods.PresetLoad,
+        params: { name: "Custom Device" },
+      });
+      expect(capturedLimits).not.toBeNull();
+      expect((capturedLimits as { maxStapmMw: number }).maxStapmMw).toBe(100_000);
     });
   });
 

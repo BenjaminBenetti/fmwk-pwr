@@ -1,6 +1,6 @@
 {
   "name": "default",
-  "description": "Stock power limits, GPU at auto",
+  "description": "Auto power limits, GPU at auto",
   "power": {
     "stapmLimit": null,
     "slowLimit": null,

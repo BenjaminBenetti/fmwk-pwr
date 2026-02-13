@@ -1,4 +1,4 @@
-import { loadConfig, resolveProfilesDir } from "./config/config.js";
+import { loadConfig, resolveProfilesDir, resolvePresetsDir } from "./config/config.js";
 import { SocketServer } from "./socket/server.js";
 import { createHandler } from "./socket/handler.js";
 import { ProfileManager } from "./profiles/manager.js";
@@ -20,9 +20,10 @@ async function main(): Promise<void> {
   // Load config
   const { config, configPath } = loadConfig();
   const profilesDir = resolveProfilesDir(configPath);
+  const presetsDir = resolvePresetsDir(configPath);
 
   // Detect hardware
-  const hardware = await detectHardware();
+  const hardware = await detectHardware(config.hardwareLimits);
   console.log(`[main] Detected hardware: ${hardware.name}`);
 
   // Initialize state
@@ -32,6 +33,7 @@ async function main(): Promise<void> {
     lastHwInfo: null,
     lastHwInfoTime: null,
     config,
+    configPath,
   };
 
   // Load profiles
@@ -52,7 +54,7 @@ async function main(): Promise<void> {
   }
 
   // Start socket server
-  const handler = createHandler(profileManager, state);
+  const handler = createHandler(profileManager, state, hardware, presetsDir);
   const socketServer = new SocketServer(config.socketPath, handler);
   socketServer.start();
 

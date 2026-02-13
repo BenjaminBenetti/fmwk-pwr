@@ -23,6 +23,16 @@ import type {
   ConfigUpdateParams,
   ConfigUpdateResult,
 } from "./config-methods.js";
+import type {
+  PresetListParams,
+  PresetListResult,
+  PresetLoadParams,
+  PresetLoadResult,
+} from "./preset-methods.js";
+
+// =====================================
+// Method Map
+// =====================================
 
 /** Maps each IPC method name to its typed params/result pair, enabling type-safe dispatch on both client and server. */
 export interface MethodMap {
@@ -44,4 +54,8 @@ export interface MethodMap {
   [Methods.ConfigGet]: { params: ConfigGetParams; result: ConfigGetResult };
   /** Partially update the server configuration. */
   [Methods.ConfigUpdate]: { params: ConfigUpdateParams; result: ConfigUpdateResult };
+  /** List available hardware presets. */
+  [Methods.PresetList]: { params: PresetListParams; result: PresetListResult };
+  /** Load a hardware preset into the server configuration. */
+  [Methods.PresetLoad]: { params: PresetLoadParams; result: PresetLoadResult };
 }

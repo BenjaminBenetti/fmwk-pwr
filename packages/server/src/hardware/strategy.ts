@@ -1,4 +1,8 @@
-import type { HardwareInfo, Profile } from "@fmwk-pwr/shared";
+import type { HardwareInfo, HardwareLimits, Profile } from "@fmwk-pwr/shared";
+
+// =====================================
+// Hardware Strategy
+// =====================================
 
 /**
  * Hardware abstraction interface for platform-specific power and GPU control.
@@ -10,6 +14,9 @@ import type { HardwareInfo, Profile } from "@fmwk-pwr/shared";
 export interface HardwareStrategy {
   /** Human-readable name of the hardware platform (e.g. "Strix Halo"). */
   readonly name: string;
+
+  /** Current hardware validation limits. */
+  hardwareLimits: HardwareLimits;
 
   /**
    * Apply CPU power limits via the platform's SMU interface.
@@ -57,6 +64,12 @@ export interface HardwareStrategy {
    * @returns Array of human-readable error strings (empty if valid)
    */
   validateProfile(profile: Profile): string[];
+
+  /**
+   * Update the hardware limits used for profile validation.
+   * @param limits - New hardware limits to apply
+   */
+  setHardwareLimits(limits: HardwareLimits): void;
 
   /**
    * Release all hardware resources (SMU handles, file descriptors, etc.).

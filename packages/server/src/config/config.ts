@@ -1,6 +1,6 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
-import type { ServerConfig } from "@fmwk-pwr/shared";
+import type { HardwareLimits, ServerConfig } from "@fmwk-pwr/shared";
 
 // =====================================
 // Configuration Defaults
@@ -13,6 +13,15 @@ const DEFAULT_CONFIG: ServerConfig = {
   socketPath: "/run/fmwk-pwr/fmwk-pwr.sock",
   watcherIntervalMs: 5000,
   defaultProfile: "default",
+  firstTimeSetup: true,
+  hardwareLimits: {
+    minPowerMw: 15_000,
+    maxStapmMw: 132_000,
+    maxSlowMw: 154_000,
+    maxFastMw: 170_000,
+    minGpuClockMhz: 200,
+    maxGpuClockMhz: 3_000,
+  },
 };
 
 // =====================================
@@ -48,23 +57,19 @@ function findProjectRoot(): string {
 }
 
 /**
- * Determines which config file to load using a fallback chain:
+ * Determines the config file path using a fallback chain:
  * 1. Dev mode: `<project-root>/config/config.json`
- * 2. System path: `/etc/fmwk-pwr/config.json`
- * 3. Empty string if no config file exists (triggers defaults)
- * @returns Absolute path to the config file, or empty string if none found
+ * 2. Production: `/etc/fmwk-pwr/config.json`
+ *
+ * Always returns a target path even if the file does not exist yet,
+ * so that first-time setup can create it via {@link saveConfig}.
+ * @returns Absolute path to the config file
  */
 function resolveConfigPath(): string {
   if (isDev()) {
-    const devPath = resolve(findProjectRoot(), "config/config.json");
-    if (existsSync(devPath)) {
-      return devPath;
-    }
+    return resolve(findProjectRoot(), "config/config.json");
   }
-  if (existsSync(SYSTEM_CONFIG_PATH)) {
-    return SYSTEM_CONFIG_PATH;
-  }
-  return "";
+  return SYSTEM_CONFIG_PATH;
 }
 
 // =====================================
@@ -118,6 +123,34 @@ function validateConfig(raw: unknown): ServerConfig {
     config.defaultProfile = obj.defaultProfile;
   }
 
+  if ("firstTimeSetup" in obj) {
+    if (typeof obj.firstTimeSetup !== "boolean") {
+      throw new Error("firstTimeSetup must be a boolean");
+    }
+    config.firstTimeSetup = obj.firstTimeSetup;
+  }
+
+  if ("hardwareLimits" in obj) {
+    if (typeof obj.hardwareLimits !== "object" || obj.hardwareLimits === null) {
+      throw new Error("hardwareLimits must be an object");
+    }
+    const hl = obj.hardwareLimits as Record<string, unknown>;
+    const fields: (keyof HardwareLimits)[] = [
+      "minPowerMw",
+      "maxStapmMw",
+      "maxSlowMw",
+      "maxFastMw",
+      "minGpuClockMhz",
+      "maxGpuClockMhz",
+    ];
+    for (const field of fields) {
+      if (typeof hl[field] !== "number" || (hl[field] as number) <= 0) {
+        throw new Error(`hardwareLimits.${field} must be a positive number`);
+      }
+    }
+    config.hardwareLimits = hl as unknown as HardwareLimits;
+  }
+
   return config;
 }
 
@@ -126,16 +159,16 @@ function validateConfig(raw: unknown): ServerConfig {
 // =====================================
 
 /**
- * Loads the server configuration from disk with fallback chain:
- * dev path -> system path -> built-in defaults.
- * @returns The resolved config and the path it was loaded from (empty string if defaults were used)
+ * Loads the server configuration from disk, falling back to built-in
+ * defaults if the config file does not exist yet (first-time startup).
+ * @returns The resolved config and the target config file path
  */
 export function loadConfig(): { config: ServerConfig; configPath: string } {
   const configPath = resolveConfigPath();
 
-  if (!configPath) {
-    console.log("[config] No config file found, using defaults");
-    return { config: { ...DEFAULT_CONFIG }, configPath: "" };
+  if (!existsSync(configPath)) {
+    console.log("[config] No config file found, using defaults (first-time setup)");
+    return { config: { ...DEFAULT_CONFIG }, configPath };
   }
 
   console.log(`[config] Loading config from ${configPath}`);
@@ -145,18 +178,33 @@ export function loadConfig(): { config: ServerConfig; configPath: string } {
 }
 
 /**
- * Resolves the profiles directory path based on the loaded config location.
- * Uses the directory adjacent to the config file, falling back to the system
- * path `/etc/fmwk-pwr/profiles` or the dev `config/profiles` directory.
- * @param configPath - Path to the loaded config file (empty string if defaults were used)
+ * Resolves the profiles directory as a sibling of the config file.
+ * @param configPath - Absolute path to the config file
  * @returns Absolute path to the profiles directory
  */
 export function resolveProfilesDir(configPath: string): string {
-  if (configPath) {
-    return resolve(dirname(configPath), "profiles");
+  return resolve(dirname(configPath), "profiles");
+}
+
+/**
+ * Resolves the presets directory as a sibling of the config file.
+ * @param configPath - Absolute path to the config file
+ * @returns Absolute path to the presets directory
+ */
+export function resolvePresetsDir(configPath: string): string {
+  return resolve(dirname(configPath), "presets");
+}
+
+/**
+ * Writes the server configuration to disk as formatted JSON.
+ * Creates the parent directory if it does not exist (first-time setup).
+ * @param configPath - Absolute path to the config file
+ * @param config - The server configuration to persist
+ */
+export function saveConfig(configPath: string, config: ServerConfig): void {
+  const dir = dirname(configPath);
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true });
   }
-  if (existsSync("/etc/fmwk-pwr/profiles")) {
-    return "/etc/fmwk-pwr/profiles";
-  }
-  return resolve(findProjectRoot(), "config/profiles");
+  writeFileSync(configPath, JSON.stringify(config, null, 2) + "\n");
 }

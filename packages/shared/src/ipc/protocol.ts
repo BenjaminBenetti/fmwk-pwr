@@ -1,3 +1,7 @@
+// =====================================
+// Request
+// =====================================
+
 /** A JSON-RPC-style request sent from the client to the server over the Unix socket. */
 export interface Request {
   /** Unique request identifier used to correlate responses. */
@@ -7,6 +11,10 @@ export interface Request {
   /** Optional method parameters as key-value pairs. */
   params?: Record<string, unknown>;
 }
+
+// =====================================
+// Responses
+// =====================================
 
 /** A successful response returned by the server. */
 export interface Response {

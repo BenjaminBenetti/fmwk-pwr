@@ -24,10 +24,12 @@ describe("shared type exports", () => {
     expect(Methods.StatusGet).toBe("status.get");
     expect(Methods.ConfigGet).toBe("config.get");
     expect(Methods.ConfigUpdate).toBe("config.update");
+    expect(Methods.PresetList).toBe("preset.list");
+    expect(Methods.PresetLoad).toBe("preset.load");
   });
 
-  test("Methods constant has exactly 9 methods", () => {
-    expect(Object.keys(Methods)).toHaveLength(9);
+  test("Methods constant has exactly 11 methods", () => {
+    expect(Object.keys(Methods)).toHaveLength(11);
   });
 
   test("Profile type can be constructed", () => {
@@ -62,9 +64,20 @@ describe("shared type exports", () => {
       socketPath: "/run/fmwk-pwr/fmwk-pwr.sock",
       watcherIntervalMs: 5000,
       defaultProfile: "default",
+      firstTimeSetup: true,
+      hardwareLimits: {
+        minPowerMw: 5000,
+        maxStapmMw: 120000,
+        maxSlowMw: 142000,
+        maxFastMw: 180000,
+        minGpuClockMhz: 200,
+        maxGpuClockMhz: 3000,
+      },
     };
     expect(config.defaultProfile).toBe("default");
     expect(config.watcherIntervalMs).toBe(5000);
+    expect(config.firstTimeSetup).toBe(true);
+    expect(config.hardwareLimits.maxStapmMw).toBe(120000);
   });
 
   test("HardwareInfo type can be constructed with nullable fields", () => {
@@ -128,8 +141,10 @@ describe("shared type exports", () => {
       "status.get",
       "config.get",
       "config.update",
+      "preset.list",
+      "preset.load",
     ];
-    expect(names).toHaveLength(9);
+    expect(names).toHaveLength(11);
   });
 
   test("ProfileApplyResult includes both profile and hwInfo", () => {
@@ -205,7 +220,9 @@ describe("shared type exports", () => {
       "status.get",
       "config.get",
       "config.update",
+      "preset.list",
+      "preset.load",
     ];
-    expect(keys).toHaveLength(9);
+    expect(keys).toHaveLength(11);
   });
 });

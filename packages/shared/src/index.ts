@@ -1,6 +1,17 @@
+// =====================================
+// Types
+// =====================================
+
 export type { Profile } from "./profile.js";
 export type { ServerConfig } from "./server-config.js";
 export type { HardwareInfo } from "./hardware-info.js";
+export type { HardwareLimits } from "./hardware-limits.js";
+export type { Preset } from "./preset.js";
+
+// =====================================
+// IPC
+// =====================================
+
 export {
   ErrorCode,
   type ErrorCodeName,
@@ -28,4 +39,8 @@ export {
   type StatusGetResult,
   type ConfigGetResult,
   type ConfigUpdateResult,
+  type PresetListParams,
+  type PresetListResult,
+  type PresetLoadParams,
+  type PresetLoadResult,
 } from "./ipc/index.js";

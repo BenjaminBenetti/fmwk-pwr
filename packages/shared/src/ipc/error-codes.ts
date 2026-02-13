@@ -1,3 +1,7 @@
+// =====================================
+// Error Codes
+// =====================================
+
 /**
  * Machine-readable error codes returned in ErrorResponse messages.
  * Shared between server and clients to ensure consistent error handling.

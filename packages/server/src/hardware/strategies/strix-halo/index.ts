@@ -1,25 +1,8 @@
-import type { Profile, HardwareInfo } from "@fmwk-pwr/shared";
+import type { Profile, HardwareInfo, HardwareLimits } from "@fmwk-pwr/shared";
 import type { HardwareStrategy } from "../../strategy.js";
 import { RyzenAdj } from "./ryzenadj.js";
 import { HwmonReader } from "./hwmon.js";
 import { GpuController } from "./gpu.js";
-
-// =====================================
-// Hardware Limits
-// =====================================
-
-/** Minimum allowed power limit for all modes in mW (15 W) */
-const MIN_POWER_LIMIT_MW = 15_000;
-/** Maximum allowed STAPM (sustained) power limit in mW (132 W) */
-const MAX_STAPM_LIMIT_MW = 132_000;
-/** Maximum allowed slow PPT (average) power limit in mW (154 W) */
-const MAX_SLOW_LIMIT_MW = 154_000;
-/** Maximum allowed fast PPT (peak) power limit in mW (170 W) */
-const MAX_FAST_LIMIT_MW = 170_000;
-/** Minimum allowed GPU clock in MHz */
-const MIN_GPU_CLOCK_MHZ = 200;
-/** Maximum allowed GPU clock in MHz */
-const MAX_GPU_CLOCK_MHZ = 3_000;
 
 // =====================================
 // Lifecycle
@@ -36,15 +19,19 @@ const MAX_GPU_CLOCK_MHZ = 3_000;
 export class StrixHaloStrategy implements HardwareStrategy {
   readonly name = "Strix Halo";
 
+  hardwareLimits: HardwareLimits;
+
   private readonly ryzenAdj: RyzenAdj;
   private readonly hwmon: HwmonReader;
   private readonly gpu: GpuController;
 
   /**
    * Initialize all hardware subsystems.
+   * @param hardwareLimits - Hardware-specific bounds for profile validation
    * @throws If libryzenadj fails to load/init or no AMD GPU is found in sysfs
    */
-  constructor() {
+  constructor(hardwareLimits: HardwareLimits) {
+    this.hardwareLimits = hardwareLimits;
     this.ryzenAdj = new RyzenAdj();
     this.hwmon = new HwmonReader();
 
@@ -164,8 +151,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
 
   /**
    * Validate a profile's power and GPU settings against Strix Halo hardware limits.
-   * Checks power limits (STAPM 15--132 W, slow 15--154 W, fast 15--170 W), GPU clock (200--3000 MHz),
-   * and process pattern regex syntax.
+   * Checks power limits, GPU clock, and process pattern regex syntax.
    * @param profile - The profile to validate
    * @returns Array of human-readable error strings (empty if valid)
    */
@@ -174,23 +160,23 @@ export class StrixHaloStrategy implements HardwareStrategy {
     const { power, gpu, match } = profile;
 
     if (power.stapmLimit !== null) {
-      if (power.stapmLimit < MIN_POWER_LIMIT_MW || power.stapmLimit > MAX_STAPM_LIMIT_MW) {
-        errors.push(`STAPM limit must be between ${MIN_POWER_LIMIT_MW} and ${MAX_STAPM_LIMIT_MW} mW`);
+      if (power.stapmLimit < this.hardwareLimits.minPowerMw || power.stapmLimit > this.hardwareLimits.maxStapmMw) {
+        errors.push(`STAPM limit must be between ${this.hardwareLimits.minPowerMw} and ${this.hardwareLimits.maxStapmMw} mW`);
       }
     }
     if (power.slowLimit !== null) {
-      if (power.slowLimit < MIN_POWER_LIMIT_MW || power.slowLimit > MAX_SLOW_LIMIT_MW) {
-        errors.push(`Slow PPT limit must be between ${MIN_POWER_LIMIT_MW} and ${MAX_SLOW_LIMIT_MW} mW`);
+      if (power.slowLimit < this.hardwareLimits.minPowerMw || power.slowLimit > this.hardwareLimits.maxSlowMw) {
+        errors.push(`Slow PPT limit must be between ${this.hardwareLimits.minPowerMw} and ${this.hardwareLimits.maxSlowMw} mW`);
       }
     }
     if (power.fastLimit !== null) {
-      if (power.fastLimit < MIN_POWER_LIMIT_MW || power.fastLimit > MAX_FAST_LIMIT_MW) {
-        errors.push(`Fast PPT limit must be between ${MIN_POWER_LIMIT_MW} and ${MAX_FAST_LIMIT_MW} mW`);
+      if (power.fastLimit < this.hardwareLimits.minPowerMw || power.fastLimit > this.hardwareLimits.maxFastMw) {
+        errors.push(`Fast PPT limit must be between ${this.hardwareLimits.minPowerMw} and ${this.hardwareLimits.maxFastMw} mW`);
       }
     }
     if (gpu.clockMhz !== null) {
-      if (gpu.clockMhz < MIN_GPU_CLOCK_MHZ || gpu.clockMhz > MAX_GPU_CLOCK_MHZ) {
-        errors.push(`GPU clock must be between ${MIN_GPU_CLOCK_MHZ} and ${MAX_GPU_CLOCK_MHZ} MHz`);
+      if (gpu.clockMhz < this.hardwareLimits.minGpuClockMhz || gpu.clockMhz > this.hardwareLimits.maxGpuClockMhz) {
+        errors.push(`GPU clock must be between ${this.hardwareLimits.minGpuClockMhz} and ${this.hardwareLimits.maxGpuClockMhz} MHz`);
       }
     }
 
@@ -203,6 +189,18 @@ export class StrixHaloStrategy implements HardwareStrategy {
     }
 
     return errors;
+  }
+
+  // =====================================
+  // Hardware Limits
+  // =====================================
+
+  /**
+   * Update the hardware limits used for profile validation.
+   * @param limits - New hardware limits to apply
+   */
+  setHardwareLimits(limits: HardwareLimits): void {
+    this.hardwareLimits = limits;
   }
 
   // =====================================

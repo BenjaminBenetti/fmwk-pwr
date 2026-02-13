@@ -1,0 +1,12 @@
+{
+  "name": "Framework Desktop - AI MAX 3xx",
+  "description": "Framework Desktop with AMD Ryzen AI MAX 300 series APU",
+  "hardwareLimits": {
+    "minPowerMw": 15000,
+    "maxStapmMw": 132000,
+    "maxSlowMw": 154000,
+    "maxFastMw": 170000,
+    "minGpuClockMhz": 200,
+    "maxGpuClockMhz": 3000
+  }
+}

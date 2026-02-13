@@ -1,5 +1,9 @@
 import type { HardwareInfo, ServerConfig } from "@fmwk-pwr/shared";
 
+// =====================================
+// Server State
+// =====================================
+
 /**
  * Mutable server-wide state shared across the socket handler and other subsystems.
  * Tracks the currently active profile, how it was activated, the most recent
@@ -16,4 +20,6 @@ export interface ServerState {
   lastHwInfoTime: number | null;
   /** Runtime server configuration (may be mutated by ConfigUpdate requests). */
   config: ServerConfig;
+  /** Path to the config file on disk (empty string if defaults were used). */
+  configPath: string;
 }
