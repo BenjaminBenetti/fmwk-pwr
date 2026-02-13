@@ -1,4 +1,5 @@
 import type { Profile, HardwareLimits } from '../types';
+import { Checkbox, CustomSlider } from './controls';
 
 interface GpuControlsProps {
   gpu: Profile['gpu'];
@@ -6,55 +7,102 @@ interface GpuControlsProps {
   onChange: (gpu: Profile['gpu']) => void;
 }
 
+type PerfMode = 'auto' | 'manual' | 'max';
+
+function getPerfMode(gpu: Profile['gpu']): PerfMode {
+  if (gpu.clockMhz !== null) return 'manual';
+  if (gpu.perfLevel === 'high') return 'max';
+  return 'auto';
+}
+
+const perfOptions: { label: string; mode: PerfMode }[] = [
+  { label: 'auto', mode: 'auto' },
+  { label: 'manual', mode: 'manual' },
+  { label: 'max', mode: 'max' },
+];
+
 export function GpuControls({ gpu, hardwareLimits, onChange }: GpuControlsProps) {
-  const clockEnabled = gpu.clockMhz !== null;
+  const mode = getPerfMode(gpu);
+  const clockEnabled = mode === 'manual';
+  const clockVal = gpu.clockMhz ?? hardwareLimits.minGpuClockMhz;
+
+  const handleModeChange = (newMode: PerfMode) => {
+    switch (newMode) {
+      case 'auto':
+        onChange({ clockMhz: null, perfLevel: 'auto' });
+        break;
+      case 'manual':
+        onChange({ clockMhz: hardwareLimits.minGpuClockMhz, perfLevel: null });
+        break;
+      case 'max':
+        onChange({ clockMhz: null, perfLevel: 'high' });
+        break;
+    }
+  };
 
   return (
-    <div className="space-y-3">
-      <h2 className="text-xs text-gray-400 uppercase tracking-wide">GPU</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
+        // gpu
+      </span>
 
-      {/* GPU Clock */}
-      <div className="space-y-1">
-        <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={clockEnabled}
-              onChange={(e) => onChange({
-                clockMhz: e.target.checked ? hardwareLimits.minGpuClockMhz : null,
-                perfLevel: e.target.checked ? null : gpu.perfLevel,
-              })}
-              className="accent-blue-500" />
-            Clock
-          </label>
-          <span className="text-sm font-mono w-20 text-right">
-            {clockEnabled ? `${gpu.clockMhz} MHz` : '\u2014'}
+      {/* Clock slider */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Checkbox checked={clockEnabled} onChange={(v) => handleModeChange(v ? 'manual' : 'auto')} />
+            <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-primary)' }}>
+              max_clock
+            </span>
+          </div>
+          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
+            {clockEnabled
+              ? `${clockVal} mhz / ${hardwareLimits.maxGpuClockMhz} mhz`
+              : '\u2014'}
           </span>
         </div>
-        <input type="range" min={hardwareLimits.minGpuClockMhz} max={hardwareLimits.maxGpuClockMhz} step={100}
-          value={gpu.clockMhz ?? hardwareLimits.minGpuClockMhz}
+        <CustomSlider
+          value={clockVal}
+          min={hardwareLimits.minGpuClockMhz}
+          max={hardwareLimits.maxGpuClockMhz}
+          step={100}
           disabled={!clockEnabled}
-          onChange={(e) => onChange({ ...gpu, clockMhz: Number(e.target.value) })}
-          className="w-full accent-blue-500 disabled:opacity-30" />
+          onChange={(v) => onChange({ ...gpu, clockMhz: v })}
+        />
       </div>
 
-      {/* Perf Level -- only shown when clock is null */}
-      {!clockEnabled && (
-        <div className="space-y-1">
-          <label className="text-sm text-gray-300">Perf Level</label>
-          <div className="flex gap-1">
-            {(['auto', 'high', null] as const).map((level) => (
-              <button key={String(level)}
-                onClick={() => onChange({ ...gpu, perfLevel: level })}
-                className={`px-3 py-1 rounded text-xs ${
-                  gpu.perfLevel === level
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
-                }`}>
-                {level === null ? 'Off' : level.charAt(0).toUpperCase() + level.slice(1)}
+      {/* Perf level toggle */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8 }}>
+        <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-primary)' }}>
+          perf_level
+        </span>
+        <div style={{ display: 'flex', flexDirection: 'row', gap: 0 }}>
+          {perfOptions.map(({ label, mode: m }) => {
+            const active = mode === m;
+            return (
+              <button
+                key={m}
+                onClick={() => handleModeChange(m)}
+                style={{
+                  height: 32,
+                  padding: '0 16px',
+                  borderRadius: 'var(--border-radius)',
+                  border: active ? 'none' : '1px solid var(--border)',
+                  background: active ? 'var(--accent)' : 'transparent',
+                  color: active ? 'var(--accent-on)' : 'var(--text-dim)',
+                  fontFamily: 'var(--font)',
+                  fontSize: 12,
+                  fontWeight: 500,
+                  letterSpacing: '0.5px',
+                  cursor: 'pointer',
+                }}
+              >
+                {label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }

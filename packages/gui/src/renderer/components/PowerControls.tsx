@@ -1,4 +1,5 @@
 import type { Profile, HardwareLimits } from '../types';
+import { Checkbox, CustomSlider } from './controls';
 
 interface PowerControlsProps {
   power: Profile['power'];
@@ -11,36 +12,46 @@ function PowerSlider({ label, value, min, max, onChange }: {
   onChange: (value: number | null) => void;
 }) {
   const enabled = value !== null;
-  const displayVal = enabled ? (value / 1000).toFixed(0) : '\u2014';
+  const displayVal = enabled ? `${(value / 1000).toFixed(0)} w` : '\u2014';
+  const maxDisplay = `${(max / 1000).toFixed(0)} w`;
   const sliderVal = enabled ? value : min;
 
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" checked={enabled} onChange={(e) => onChange(e.target.checked ? min : null)}
-            className="accent-blue-500" />
-          {label}
-        </label>
-        <span className="text-sm font-mono w-12 text-right">{enabled ? `${displayVal}W` : '\u2014'}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Checkbox checked={enabled} onChange={(v) => onChange(v ? min : null)} />
+          <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-primary)' }}>
+            {label}
+          </span>
+        </div>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
+          {enabled ? `${displayVal} / ${maxDisplay}` : '\u2014'}
+        </span>
       </div>
-      <input type="range" min={min} max={max} step={1000} value={sliderVal}
+      <CustomSlider
+        value={sliderVal}
+        min={min}
+        max={max}
+        step={1000}
         disabled={!enabled}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-blue-500 disabled:opacity-30" />
+        onChange={(v) => onChange(v)}
+      />
     </div>
   );
 }
 
 export function PowerControls({ power, hardwareLimits, onChange }: PowerControlsProps) {
   return (
-    <div className="space-y-3">
-      <h2 className="text-xs text-gray-400 uppercase tracking-wide">Power Limits</h2>
-      <PowerSlider label="STAPM" value={power.stapmLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxStapmMw}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
+        // power_limits
+      </span>
+      <PowerSlider label="stapm" value={power.stapmLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxStapmMw}
         onChange={(v) => onChange({ ...power, stapmLimit: v })} />
-      <PowerSlider label="Slow PPT" value={power.slowLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxSlowMw}
+      <PowerSlider label="slow_ppt" value={power.slowLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxSlowMw}
         onChange={(v) => onChange({ ...power, slowLimit: v })} />
-      <PowerSlider label="Fast PPT" value={power.fastLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxFastMw}
+      <PowerSlider label="fast_ppt" value={power.fastLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxFastMw}
         onChange={(v) => onChange({ ...power, fastLimit: v })} />
     </div>
   );

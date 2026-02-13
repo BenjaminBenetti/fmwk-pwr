@@ -19,7 +19,8 @@
     "typescript": "^5.7.0"
   },
   "scripts": {
-    "build": "bun run build:css && bun run build:html && bun run build:main && bun run build:preload && bun run build:renderer",
+    "build": "bun run build:css && bun run build:fonts && bun run build:html && bun run build:main && bun run build:preload && bun run build:renderer",
+    "build:fonts": "cp -r src/renderer/fonts dist/renderer/fonts",
     "build:html": "cp src/renderer/index.html dist/renderer/index.html",
     "build:main": "bun build src/main/main.ts --outdir dist/main --target node --format esm --external electron",
     "build:preload": "bun build src/main/preload.ts --outdir dist/main --target node --format cjs --external electron",

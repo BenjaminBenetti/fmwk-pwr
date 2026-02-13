@@ -13,16 +13,16 @@ const TUNED_PROFILES = [
 
 export function SystemProfile({ tunedProfile, onChange }: SystemProfileProps) {
   return (
-    <div className="space-y-2">
-      <h2 className="text-xs text-gray-400 uppercase tracking-wide">System Profile</h2>
+    <div className="flex flex-col gap-2">
+      <span className="text-[12px] text-text-muted font-sans">// system_performance_profile</span>
       <select
-        className="w-full bg-gray-800 border border-gray-600 rounded px-2 py-1.5 text-sm"
+        className="w-full h-[40px] bg-transparent border border-border rounded-theme px-3 text-[13px] text-text-primary font-sans appearance-none cursor-pointer outline-none"
         value={tunedProfile ?? '__none__'}
         onChange={(e) => onChange(e.target.value === '__none__' ? null : e.target.value)}
       >
-        <option value="__none__">Don't change</option>
+        <option value="__none__" className="bg-bg-primary text-text-primary">don't change</option>
         {TUNED_PROFILES.map((p) => (
-          <option key={p} value={p}>{p}</option>
+          <option key={p} value={p} className="bg-bg-primary text-text-primary">{p}</option>
         ))}
       </select>
     </div>

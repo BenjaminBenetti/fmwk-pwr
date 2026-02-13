@@ -16,6 +16,12 @@ const DEFAULT_PROFILE: Profile = {
   match: { enabled: false, processPatterns: [], priority: 0 },
 };
 
+const THEMES = ['default', 'industrial', 'swiss', 'warm-retro'] as const;
+
+function Divider() {
+  return <div className="w-full h-px bg-border" />;
+}
+
 export function App() {
   const { profiles, loading: profilesLoading, refetch: refetchProfiles } = useProfiles();
   const { activeProfile, hwInfo } = useStatus(1500);
@@ -25,6 +31,19 @@ export function App() {
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [originalProfile, setOriginalProfile] = useState<Profile | null>(null);
   const [applying, setApplying] = useState(false);
+  const [theme, setTheme] = useState('default');
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+  }, [theme]);
+
+  const handleThemeToggle = useCallback(() => {
+    setTheme((prev) => {
+      const idx = THEMES.indexOf(prev as typeof THEMES[number]);
+      return THEMES[(idx + 1) % THEMES.length];
+    });
+  }, []);
 
   // Load active profile into editor when it changes or profiles load
   useEffect(() => {
@@ -62,7 +81,6 @@ export function App() {
     try {
       await window.fmwkPwr.deleteProfile(name);
       await refetchProfiles();
-      // Load active profile after deletion
       if (activeProfile && activeProfile !== name) {
         handleSelectProfile(activeProfile);
       }
@@ -83,22 +101,23 @@ export function App() {
 
   if (profilesLoading || configLoading || !hardwareLimits) {
     return (
-      <div className="p-4 flex items-center justify-center h-screen">
-        <p className="text-gray-400 text-sm">
-          {connectionState === 'disconnected' ? 'Connecting to server...' : 'Loading...'}
+      <div className="p-3 flex items-center justify-center h-screen bg-bg-primary">
+        <p className="text-text-muted text-[13px] font-sans">
+          {connectionState === 'disconnected' ? 'connecting to server...' : 'loading...'}
         </p>
       </div>
     );
   }
 
   return (
-    <div className="p-3 space-y-3 text-sm select-none">
-      {/* Connection banner */}
+    <div className="p-3 flex flex-col gap-3 text-[13px] select-none bg-bg-primary min-h-screen font-sans">
       {connectionState !== 'connected' && (
-        <div className={`px-3 py-1.5 rounded text-xs ${
-          connectionState === 'connecting' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-red-900/50 text-red-300'
+        <div className={`px-3 py-1.5 rounded-theme text-[12px] font-sans border ${
+          connectionState === 'connecting'
+            ? 'border-warning text-warning'
+            : 'border-danger text-danger'
         }`}>
-          {connectionState === 'connecting' ? 'Connecting to server...' : 'Disconnected from server'}
+          {connectionState === 'connecting' ? 'connecting to server...' : 'disconnected from server'}
         </div>
       )}
 
@@ -110,52 +129,52 @@ export function App() {
         onSelect={handleSelectProfile}
         onNew={handleNewProfile}
         onDelete={handleDeleteProfile}
+        onThemeToggle={handleThemeToggle}
       />
 
       {editProfile && (
         <>
-          <div className="border-t border-gray-700" />
+          <Divider />
           <PowerControls
             power={editProfile.power}
             hardwareLimits={hardwareLimits}
             onChange={(power) => setEditProfile({ ...editProfile, power })}
           />
 
-          <div className="border-t border-gray-700" />
+          <Divider />
           <GpuControls
             gpu={editProfile.gpu}
             hardwareLimits={hardwareLimits}
             onChange={(gpu) => setEditProfile({ ...editProfile, gpu })}
           />
 
-          <div className="border-t border-gray-700" />
+          <Divider />
           <SystemProfile
             tunedProfile={editProfile.tunedProfile}
             onChange={(tunedProfile) => setEditProfile({ ...editProfile, tunedProfile })}
           />
 
-          <div className="border-t border-gray-700" />
+          <Divider />
           <SensorReadout hwInfo={hwInfo} />
 
-          <div className="border-t border-gray-700" />
+          <Divider />
           <AutoMatch
             match={editProfile.match}
             onChange={(match) => setEditProfile({ ...editProfile, match })}
           />
 
-          <div className="border-t border-gray-700 pt-3">
-            <button
-              onClick={handleApply}
-              disabled={!isDirty || applying}
-              className={`w-full py-2 rounded font-medium text-sm ${
-                isDirty && !applying
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-700 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {applying ? 'Applying...' : isDirty ? 'Apply' : 'Applied'}
-            </button>
-          </div>
+          <Divider />
+          <button
+            onClick={handleApply}
+            disabled={!isDirty && !applying}
+            className={`w-full h-[40px] rounded-theme text-[12px] tracking-[0.5px] font-sans cursor-pointer transition-colors ${
+              isDirty || applying
+                ? 'bg-accent text-accent-on border-none'
+                : 'bg-transparent border border-border text-text-dim'
+            }`}
+          >
+            {applying ? 'applying...' : isDirty ? 'apply' : 'applied'}
+          </button>
         </>
       )}
     </div>
