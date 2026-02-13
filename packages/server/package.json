@@ -1,0 +1,15 @@
+{
+  "name": "@fmwk-pwr/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/main.ts",
+  "dependencies": {
+    "@fmwk-pwr/shared": "workspace:*"
+  },
+  "scripts": {
+    "start": "sudo -E $HOME/.bun/bin/bun run src/main.ts",
+    "test": "bun test",
+    "typecheck": "bunx tsc --noEmit"
+  }
+}

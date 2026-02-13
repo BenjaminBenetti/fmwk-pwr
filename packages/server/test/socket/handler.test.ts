@@ -1,0 +1,415 @@
+import { describe, expect, test, beforeEach, afterEach } from "bun:test";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import type { Request, ErrorResponse, Profile, HardwareInfo } from "@fmwk-pwr/shared";
+import { Methods } from "@fmwk-pwr/shared";
+import type { HardwareStrategy } from "../../src/hardware/strategy.js";
+import type { ServerState } from "../../src/state.js";
+import { ProfileManager } from "../../src/profiles/manager.js";
+import { createHandler } from "../../src/socket/handler.js";
+
+function makeProfile(overrides: Partial<Profile> = {}): Profile {
+  return {
+    name: "test-profile",
+    power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+    gpu: { clockMhz: null, perfLevel: null },
+    tunedProfile: null,
+    match: { enabled: false, processPatterns: [], priority: 0 },
+    ...overrides,
+  };
+}
+
+const mockHwInfo: HardwareInfo = {
+  stapmLimit: 65000,
+  slowLimit: 75000,
+  fastLimit: 85000,
+  gpuClockMhz: null,
+  tcpuTemp: 45,
+  cpuPower: null,
+  gpuPower: null,
+  socketPower: 60000,
+  tunedProfile: "balanced",
+};
+
+function createMockHardware(): HardwareStrategy {
+  return {
+    name: "Mock",
+    applyPowerLimits() {},
+    async applyGpuClock() {},
+    async applyGpuPerfLevel() {},
+    async applyTunedProfile() {},
+    async readHardwareInfo() {
+      return { ...mockHwInfo };
+    },
+    validateProfile() {
+      return [];
+    },
+    destroy() {},
+  };
+}
+
+function createState(): ServerState {
+  return {
+    activeProfile: "default",
+    activatedBy: "startup",
+    lastHwInfo: null,
+    lastHwInfoTime: null,
+    config: {
+      gpuSysfsPath: "/sys/class/drm/card1/device",
+      socketPath: "/run/fmwk-pwr/fmwk-pwr.sock",
+      watcherIntervalMs: 5000,
+      defaultProfile: "default",
+    },
+  };
+}
+
+function isError(response: unknown): response is ErrorResponse {
+  return typeof response === "object" && response !== null && "error" in response;
+}
+
+describe("message handler", () => {
+  const tmpDir = join(import.meta.dir, ".tmp-handler-test");
+  let handler: (request: Request) => Promise<unknown>;
+  let state: ServerState;
+  let profileManager: ProfileManager;
+
+  beforeEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+    mkdirSync(tmpDir, { recursive: true });
+
+    const defaultProfile = makeProfile({ name: "default" });
+    writeFileSync(join(tmpDir, "default.json"), JSON.stringify(defaultProfile));
+
+    const mockHw = createMockHardware();
+    profileManager = new ProfileManager(tmpDir, mockHw);
+    profileManager.loadAll();
+    state = createState();
+    handler = createHandler(profileManager, state);
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  describe("profile.list", () => {
+    test("returns list of profiles", async () => {
+      const response = await handler({ id: "1", method: Methods.ProfileList });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { profiles: Profile[] } }).result;
+      expect(result.profiles).toHaveLength(1);
+      expect(result.profiles[0].name).toBe("default");
+    });
+  });
+
+  describe("profile.get", () => {
+    test("returns a profile by name", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileGet,
+        params: { name: "default" },
+      });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { profile: Profile } }).result;
+      expect(result.profile.name).toBe("default");
+    });
+
+    test("returns error for missing profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileGet,
+        params: { name: "ghost" },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("PROFILE_NOT_FOUND");
+    });
+
+    test("returns error when name is missing", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileGet,
+        params: {},
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+  });
+
+  describe("profile.create", () => {
+    test("creates a new profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileCreate,
+        params: { profile: makeProfile({ name: "new-one" }) },
+      });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { profile: Profile } }).result;
+      expect(result.profile.name).toBe("new-one");
+    });
+
+    test("returns error for duplicate name", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileCreate,
+        params: { profile: makeProfile({ name: "default" }) },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("VALIDATION_ERROR");
+    });
+
+    test("returns error when profile is missing", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileCreate,
+        params: {},
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+  });
+
+  describe("profile.update", () => {
+    test("updates an existing profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileUpdate,
+        params: {
+          name: "default",
+          profile: makeProfile({ name: "default", description: "updated" }),
+        },
+      });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { profile: Profile } }).result;
+      expect(result.profile.description).toBe("updated");
+    });
+
+    test("returns error for non-existent profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileUpdate,
+        params: {
+          name: "ghost",
+          profile: makeProfile({ name: "ghost" }),
+        },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("PROFILE_NOT_FOUND");
+    });
+
+    test("returns error when params missing", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileUpdate,
+        params: {},
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+  });
+
+  describe("profile.delete", () => {
+    test("deletes a non-active, non-default profile", async () => {
+      await handler({
+        id: "1",
+        method: Methods.ProfileCreate,
+        params: { profile: makeProfile({ name: "deletable" }) },
+      });
+
+      const response = await handler({
+        id: "2",
+        method: Methods.ProfileDelete,
+        params: { name: "deletable" },
+      });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { success: boolean } }).result;
+      expect(result.success).toBe(true);
+    });
+
+    test("prevents deleting active profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileDelete,
+        params: { name: "default" },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("CANNOT_DELETE_ACTIVE");
+    });
+
+    test("prevents deleting default profile", async () => {
+      // Create another profile and make it active, so "default" is not active
+      await handler({
+        id: "1",
+        method: Methods.ProfileCreate,
+        params: { profile: makeProfile({ name: "other" }) },
+      });
+      await handler({
+        id: "2",
+        method: Methods.ProfileApply,
+        params: { name: "other" },
+      });
+
+      // Now try to delete "default" (still the defaultProfile in config)
+      const response = await handler({
+        id: "3",
+        method: Methods.ProfileDelete,
+        params: { name: "default" },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("CANNOT_DELETE_DEFAULT");
+    });
+
+    test("returns error for non-existent profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileDelete,
+        params: { name: "ghost" },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("PROFILE_NOT_FOUND");
+    });
+  });
+
+  describe("profile.apply", () => {
+    test("applies a profile and updates state", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileApply,
+        params: { name: "default" },
+      });
+      expect(isError(response)).toBe(false);
+
+      expect(state.activeProfile).toBe("default");
+      expect(state.activatedBy).toBe("manual");
+      expect(state.lastHwInfo).not.toBeNull();
+      expect(state.lastHwInfoTime).not.toBeNull();
+    });
+
+    test("returns profile and hwInfo in result", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileApply,
+        params: { name: "default" },
+      });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { profile: Profile; hwInfo: HardwareInfo } }).result;
+      expect(result.profile.name).toBe("default");
+      expect(result.hwInfo.stapmLimit).toBe(65000);
+    });
+
+    test("returns error for non-existent profile", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ProfileApply,
+        params: { name: "ghost" },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("APPLY_ERROR");
+    });
+  });
+
+  describe("status.get", () => {
+    test("returns current server state", async () => {
+      const response = await handler({ id: "1", method: Methods.StatusGet });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { activeProfile: string; activatedBy: string; hwInfo: HardwareInfo | null } }).result;
+      expect(result.activeProfile).toBe("default");
+      expect(result.activatedBy).toBe("startup");
+      expect(result.hwInfo).toBeNull();
+    });
+
+    test("reflects state changes after apply", async () => {
+      await handler({
+        id: "1",
+        method: Methods.ProfileApply,
+        params: { name: "default" },
+      });
+
+      const response = await handler({ id: "2", method: Methods.StatusGet });
+      const result = (response as { id: string; result: { activeProfile: string; activatedBy: string; hwInfo: HardwareInfo | null } }).result;
+      expect(result.activeProfile).toBe("default");
+      expect(result.activatedBy).toBe("manual");
+      expect(result.hwInfo).not.toBeNull();
+    });
+  });
+
+  describe("config.get", () => {
+    test("returns server config", async () => {
+      const response = await handler({ id: "1", method: Methods.ConfigGet });
+      expect(isError(response)).toBe(false);
+      const result = (response as { id: string; result: { config: { defaultProfile: string } } }).result;
+      expect(result.config.defaultProfile).toBe("default");
+    });
+  });
+
+  describe("config.update", () => {
+    test("updates config partially", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ConfigUpdate,
+        params: { config: { watcherIntervalMs: 10000 } },
+      });
+      expect(isError(response)).toBe(false);
+      expect(state.config.watcherIntervalMs).toBe(10000);
+      // Other fields unchanged
+      expect(state.config.defaultProfile).toBe("default");
+    });
+
+    test("validates watcherIntervalMs must be positive", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ConfigUpdate,
+        params: { config: { watcherIntervalMs: -1 } },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+
+    test("validates defaultProfile must be non-empty", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ConfigUpdate,
+        params: { config: { defaultProfile: "" } },
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+
+    test("returns error when config is missing", async () => {
+      const response = await handler({
+        id: "1",
+        method: Methods.ConfigUpdate,
+        params: {},
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("INVALID_PARAMS");
+    });
+  });
+
+  describe("unknown method", () => {
+    test("returns METHOD_NOT_FOUND for unknown methods", async () => {
+      const response = await handler({
+        id: "1",
+        method: "unknown.method",
+      });
+      expect(isError(response)).toBe(true);
+      expect((response as ErrorResponse).error.code).toBe("METHOD_NOT_FOUND");
+    });
+  });
+
+  describe("request ID preservation", () => {
+    test("response preserves the request id", async () => {
+      const response = await handler({
+        id: "my-unique-id-123",
+        method: Methods.ProfileList,
+      });
+      expect((response as { id: string }).id).toBe("my-unique-id-123");
+    });
+
+    test("error response preserves the request id", async () => {
+      const response = await handler({
+        id: "err-id-456",
+        method: "nonexistent",
+      });
+      expect((response as ErrorResponse).id).toBe("err-id-456");
+    });
+  });
+});

@@ -1,0 +1,22 @@
+{
+  "name": "gaming-cpu",
+  "description": "Max CPU power - GPU at 2400MHz, high power limits",
+  "power": {
+    "stapmLimit": 132000,
+    "slowLimit": 154000,
+    "fastLimit": null
+  },
+  "gpu": {
+    "clockMhz": 2400,
+    "perfLevel": null
+  },
+  "tunedProfile": "accelerator-performance",
+  "match": {
+    "enabled": true,
+    "processPatterns": [
+      "Cyberpunk2077",
+      "Starfield"
+    ],
+    "priority": 20
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "default",
+  "description": "Stock power limits, GPU at auto",
+  "power": {
+    "stapmLimit": null,
+    "slowLimit": null,
+    "fastLimit": null
+  },
+  "gpu": {
+    "clockMhz": null,
+    "perfLevel": "auto"
+  },
+  "tunedProfile": null,
+  "match": {
+    "enabled": false,
+    "processPatterns": [],
+    "priority": 0
+  }
+}
