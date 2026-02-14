@@ -259,7 +259,7 @@ describe("message handler", () => {
       expect((response as ErrorResponse).error.code).toBe("CANNOT_DELETE_ACTIVE");
     });
 
-    test("prevents deleting default profile", async () => {
+    test("allows deleting default profile and reassigns defaultProfile", async () => {
       // Create another profile and make it active, so "default" is not active
       await handler({
         id: "1",
@@ -272,14 +272,15 @@ describe("message handler", () => {
         params: { name: "other" },
       });
 
-      // Now try to delete "default" (still the defaultProfile in config)
+      // Now delete "default" (still the defaultProfile in config)
       const response = await handler({
         id: "3",
         method: Methods.ProfileDelete,
         params: { name: "default" },
       });
-      expect(isError(response)).toBe(true);
-      expect((response as ErrorResponse).error.code).toBe("CANNOT_DELETE_DEFAULT");
+      expect(isError(response)).toBe(false);
+      // defaultProfile should be reassigned to the active profile
+      expect(state.config.defaultProfile).toBe("other");
     });
 
     test("returns error for non-existent profile", async () => {

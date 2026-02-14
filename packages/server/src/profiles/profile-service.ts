@@ -10,6 +10,7 @@ import {
 } from "@fmwk-pwr/shared";
 import type { ProfileManager } from "./manager.js";
 import type { ServerState } from "../state.js";
+import { saveConfig } from "../config/config.js";
 
 // =====================================
 // Helpers
@@ -126,10 +127,11 @@ export async function handleProfileUpdate(
 
 /**
  * Handle profile.delete: removes a profile by name.
- * Refuses to delete the active or default profile.
+ * Refuses to delete the active profile or the last remaining profile.
+ * If the deleted profile was the default, reassigns defaultProfile to the active profile.
  * @param id - Request ID
  * @param params - Raw request params (expects { name })
- * @param state - Server state (checked for active/default constraints)
+ * @param state - Server state (checked for active/last constraints)
  * @param profileManager - Profile persistence layer
  */
 export async function handleProfileDelete(
@@ -142,14 +144,22 @@ export async function handleProfileDelete(
   if (!name) {
     return errorResponse(id, ErrorCode.InvalidParams, "name is required");
   }
+  if (!profileManager.get(name)) {
+    return errorResponse(id, ErrorCode.ProfileNotFound, `Profile "${name}" not found`);
+  }
   if (name === state.activeProfile) {
     return errorResponse(id, ErrorCode.CannotDeleteActive, "Cannot delete the currently active profile");
   }
-  if (name === state.config.defaultProfile) {
-    return errorResponse(id, ErrorCode.CannotDeleteDefault, "Cannot delete the default profile");
+  if (profileManager.list().length <= 1) {
+    return errorResponse(id, ErrorCode.CannotDeleteLast, "Cannot delete the last remaining profile");
   }
   try {
     await profileManager.delete(name);
+    // If we deleted the default profile, reassign it to the active profile
+    if (name === state.config.defaultProfile) {
+      state.config.defaultProfile = state.activeProfile;
+      saveConfig(state.configPath, state.config);
+    }
     return { id, result: { success: true } };
   } catch (err) {
     return errorResponse(

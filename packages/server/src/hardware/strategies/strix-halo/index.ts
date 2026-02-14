@@ -74,6 +74,9 @@ export class StrixHaloStrategy implements HardwareStrategy {
    */
   async applyGpuClock(clockMhz: number | null): Promise<void> {
     if (clockMhz === null) return;
+    // Must cycle through "auto" first — the amdgpu driver won't accept
+    // a direct "high" → "manual" transition.
+    await this.gpu.setPerfLevel("auto");
     await this.gpu.setPerfLevel("manual");
     await this.gpu.setClock(clockMhz);
   }

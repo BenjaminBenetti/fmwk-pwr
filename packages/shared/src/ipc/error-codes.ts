@@ -23,8 +23,8 @@ export const ErrorCode = {
   ValidationError: "VALIDATION_ERROR",
   /** Cannot delete the currently active profile */
   CannotDeleteActive: "CANNOT_DELETE_ACTIVE",
-  /** Cannot delete the default profile */
-  CannotDeleteDefault: "CANNOT_DELETE_DEFAULT",
+  /** Cannot delete the last remaining profile */
+  CannotDeleteLast: "CANNOT_DELETE_LAST",
   /** An error occurred while applying a profile to hardware */
   ApplyError: "APPLY_ERROR",
 } as const;

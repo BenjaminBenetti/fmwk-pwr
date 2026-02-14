@@ -33,7 +33,7 @@ interface ProfileSelectorProps {
 }
 
 export function ProfileSelector({ profiles, activeProfile, currentName, onSelect, onNew, onDelete, theme, onThemeChange }: ProfileSelectorProps) {
-  const canDelete = profiles.length > 1;
+  const canDelete = profiles.length > 1 && currentName !== activeProfile;
   const isActive = currentName === activeProfile;
 
   const profileOptions = useMemo(() =>
@@ -100,7 +100,7 @@ export function ProfileSelector({ profiles, activeProfile, currentName, onSelect
             cursor: canDelete ? 'pointer' : 'not-allowed',
             opacity: canDelete ? 1 : 0.4,
           }}
-          title={canDelete ? 'Delete profile' : 'Cannot delete the last profile'}
+          title={canDelete ? 'Delete profile' : currentName === activeProfile ? 'Cannot delete the active profile' : 'Cannot delete the last profile'}
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 6h18" />

@@ -1,4 +1,4 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test, beforeEach } from "bun:test";
 import type { Profile, HardwareLimits } from "@fmwk-pwr/shared";
 
 // We can't instantiate StrixHaloStrategy in tests (requires real hardware),
@@ -319,6 +319,177 @@ describe("Strix Halo profile validation", () => {
       };
       const customErrors = validateStrixHaloProfile(failProfile, customLimits);
       expect(customErrors).toHaveLength(0);
+    });
+  });
+});
+
+// =====================================
+// GPU perf level transition logic
+// =====================================
+// StrixHaloStrategy can't be instantiated in tests (requires real hardware),
+// so we replicate the applyGpuClock logic to verify the critical
+// "auto" -> "manual" transition that works around an amdgpu driver limitation.
+
+interface GpuCall {
+  method: "setPerfLevel" | "setClock";
+  arg: string | number;
+}
+
+/**
+ * Mock GPU controller that records all calls in order.
+ */
+function createMockGpu() {
+  const calls: GpuCall[] = [];
+  return {
+    calls,
+    async setPerfLevel(level: string) {
+      calls.push({ method: "setPerfLevel", arg: level });
+    },
+    async setClock(mhz: number) {
+      calls.push({ method: "setClock", arg: mhz });
+    },
+  };
+}
+
+/**
+ * Replicate StrixHaloStrategy.applyGpuClock for testing.
+ * This must match the production implementation in index.ts lines 75-82.
+ */
+async function applyGpuClock(
+  gpu: ReturnType<typeof createMockGpu>,
+  clockMhz: number | null,
+): Promise<void> {
+  if (clockMhz === null) return;
+  // Must cycle through "auto" first — the amdgpu driver won't accept
+  // a direct "high" → "manual" transition.
+  await gpu.setPerfLevel("auto");
+  await gpu.setPerfLevel("manual");
+  await gpu.setClock(clockMhz);
+}
+
+/**
+ * Replicate StrixHaloStrategy.applyGpuPerfLevel for testing.
+ * This must match the production implementation in index.ts lines 88-91.
+ */
+async function applyGpuPerfLevel(
+  gpu: ReturnType<typeof createMockGpu>,
+  level: "auto" | "high" | null,
+): Promise<void> {
+  if (level === null) return;
+  await gpu.setPerfLevel(level);
+}
+
+describe("Strix Halo GPU perf level transitions", () => {
+  let gpu: ReturnType<typeof createMockGpu>;
+
+  beforeEach(() => {
+    gpu = createMockGpu();
+  });
+
+  describe("applyGpuClock", () => {
+    test("cycles through auto before setting manual and clock", async () => {
+      await applyGpuClock(gpu, 2500);
+
+      expect(gpu.calls).toHaveLength(3);
+      expect(gpu.calls[0]).toEqual({ method: "setPerfLevel", arg: "auto" });
+      expect(gpu.calls[1]).toEqual({ method: "setPerfLevel", arg: "manual" });
+      expect(gpu.calls[2]).toEqual({ method: "setClock", arg: 2500 });
+    });
+
+    test("sets auto first to handle high-to-manual driver limitation", async () => {
+      // The amdgpu driver rejects direct "high" -> "manual" transitions.
+      // applyGpuClock must always go through "auto" as an intermediate step.
+      await applyGpuClock(gpu, 1800);
+
+      // First call must be "auto", NOT "manual"
+      expect(gpu.calls[0].method).toBe("setPerfLevel");
+      expect(gpu.calls[0].arg).toBe("auto");
+      // Second call transitions to "manual"
+      expect(gpu.calls[1].method).toBe("setPerfLevel");
+      expect(gpu.calls[1].arg).toBe("manual");
+    });
+
+    test("does nothing when clockMhz is null", async () => {
+      await applyGpuClock(gpu, null);
+      expect(gpu.calls).toHaveLength(0);
+    });
+
+    test("sets clock after perf level transitions", async () => {
+      await applyGpuClock(gpu, 600);
+
+      // setClock must come after both setPerfLevel calls
+      const clockCall = gpu.calls.find((c) => c.method === "setClock");
+      expect(clockCall).toBeDefined();
+      expect(clockCall!.arg).toBe(600);
+
+      const clockIndex = gpu.calls.indexOf(clockCall!);
+      expect(clockIndex).toBe(2); // Must be the last call
+    });
+
+    test("works with minimum GPU clock value", async () => {
+      await applyGpuClock(gpu, 200);
+
+      expect(gpu.calls).toHaveLength(3);
+      expect(gpu.calls[2]).toEqual({ method: "setClock", arg: 200 });
+    });
+
+    test("works with maximum GPU clock value", async () => {
+      await applyGpuClock(gpu, 3000);
+
+      expect(gpu.calls).toHaveLength(3);
+      expect(gpu.calls[2]).toEqual({ method: "setClock", arg: 3000 });
+    });
+  });
+
+  describe("applyGpuPerfLevel", () => {
+    test("sets auto perf level directly (no intermediate step needed)", async () => {
+      await applyGpuPerfLevel(gpu, "auto");
+
+      expect(gpu.calls).toHaveLength(1);
+      expect(gpu.calls[0]).toEqual({ method: "setPerfLevel", arg: "auto" });
+    });
+
+    test("sets high perf level directly", async () => {
+      await applyGpuPerfLevel(gpu, "high");
+
+      expect(gpu.calls).toHaveLength(1);
+      expect(gpu.calls[0]).toEqual({ method: "setPerfLevel", arg: "high" });
+    });
+
+    test("does nothing when level is null", async () => {
+      await applyGpuPerfLevel(gpu, null);
+      expect(gpu.calls).toHaveLength(0);
+    });
+  });
+
+  describe("transition sequences", () => {
+    test("applying clock after perf level auto produces correct sequence", async () => {
+      // Simulate: first apply "auto" perf level, then apply a clock
+      await applyGpuPerfLevel(gpu, "auto");
+      await applyGpuClock(gpu, 2000);
+
+      expect(gpu.calls).toEqual([
+        { method: "setPerfLevel", arg: "auto" },
+        { method: "setPerfLevel", arg: "auto" },
+        { method: "setPerfLevel", arg: "manual" },
+        { method: "setClock", arg: 2000 },
+      ]);
+    });
+
+    test("applying clock after perf level high produces correct sequence", async () => {
+      // Simulate: currently at "high", then switch to a specific clock
+      // This is the scenario the fix addresses — without the auto
+      // intermediate step, the "high" -> "manual" transition would fail.
+      await applyGpuPerfLevel(gpu, "high");
+      await applyGpuClock(gpu, 2500);
+
+      expect(gpu.calls).toEqual([
+        { method: "setPerfLevel", arg: "high" },
+        // applyGpuClock resets to "auto" first to avoid high->manual failure
+        { method: "setPerfLevel", arg: "auto" },
+        { method: "setPerfLevel", arg: "manual" },
+        { method: "setClock", arg: 2500 },
+      ]);
     });
   });
 });

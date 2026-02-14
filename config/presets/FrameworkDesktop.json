@@ -7,6 +7,6 @@
     "maxSlowMw": 154000,
     "maxFastMw": 170000,
     "minGpuClockMhz": 200,
-    "maxGpuClockMhz": 3000
+    "maxGpuClockMhz": 2900
   }
 }
