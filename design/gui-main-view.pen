@@ -8,7 +8,7 @@
       "y": -29,
       "name": "fmwk-pwr",
       "theme": {
-        "Theme": "Warm Retro"
+        "Theme": "Default"
       },
       "clip": true,
       "width": 380,
@@ -18445,7 +18445,8 @@
       "Nord Snow",
       "Catppuccin Latte",
       "Solarized Light",
-      "Paper"
+      "Paper",
+      "Monokai"
     ]
   },
   "variables": {
@@ -18519,9 +18520,15 @@
           }
         },
         {
-          "value": "#2563EB",
+          "value": "#2563eb",
           "theme": {
             "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#ffe761",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -18600,6 +18607,12 @@
           "theme": {
             "Theme": "Paper"
           }
+        },
+        {
+          "value": "#272822",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -18676,6 +18689,12 @@
           "value": "#FFFFFF",
           "theme": {
             "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#272822",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -18754,6 +18773,12 @@
           "theme": {
             "Theme": "Paper"
           }
+        },
+        {
+          "value": "#2D2E27",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -18830,6 +18855,12 @@
           "value": "#F1F5F9",
           "theme": {
             "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#3E3D32",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -18908,6 +18939,12 @@
           "theme": {
             "Theme": "Paper"
           }
+        },
+        {
+          "value": "#49483E",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -18960,6 +18997,36 @@
           "value": "#F7768E",
           "theme": {
             "Theme": "Tokyo Night"
+          }
+        },
+        {
+          "value": "#BF616A",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#D20F39",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#DC322F",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#DC2626",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#FF4444",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -19014,6 +19081,36 @@
           "theme": {
             "Theme": "Tokyo Night"
           }
+        },
+        {
+          "value": "#2E3440",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#4C4F69",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#586E75",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#0F172A",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#F8F8F2",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -19066,6 +19163,36 @@
           "value": "#292E42",
           "theme": {
             "Theme": "Tokyo Night"
+          }
+        },
+        {
+          "value": "#D8DEE9",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#DCE0E8",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#EEE8D5",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#F1F5F9",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#3E3D32",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -19144,6 +19271,36 @@
           "theme": {
             "Theme": "Tokyo Night"
           }
+        },
+        {
+          "value": "#7B88A1",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#9CA0B0",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#93A1A1",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#94A3B8",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#75715E",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -19196,6 +19353,36 @@
           "value": "#9AA5CE",
           "theme": {
             "Theme": "Tokyo Night"
+          }
+        },
+        {
+          "value": "#4C566A",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#6C6F85",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#839496",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#64748B",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#A6A28C",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -19250,6 +19437,36 @@
           "theme": {
             "Theme": "Tokyo Night"
           }
+        },
+        {
+          "value": "#2E3440",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#4C4F69",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#657B83",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#0F172A",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#F8F8F2",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -19302,6 +19519,36 @@
           "value": "#E0AF68",
           "theme": {
             "Theme": "Tokyo Night"
+          }
+        },
+        {
+          "value": "#EBCB8B",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "#DF8E1D",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "#B58900",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "#D97706",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "#FD971F",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
@@ -19356,6 +19603,36 @@
           "theme": {
             "Theme": "Tokyo Night"
           }
+        },
+        {
+          "value": 4,
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": 8,
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": 4,
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": 6,
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": 0,
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -19409,6 +19686,36 @@
           "theme": {
             "Theme": "Tokyo Night"
           }
+        },
+        {
+          "value": "Fira Code",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "Inter",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "Source Code Pro",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "Inter",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "Source Code Pro",
+          "theme": {
+            "Theme": "Monokai"
+          }
         }
       ]
     },
@@ -19461,6 +19768,36 @@
           "value": "JetBrains Mono",
           "theme": {
             "Theme": "Tokyo Night"
+          }
+        },
+        {
+          "value": "Fira Code",
+          "theme": {
+            "Theme": "Nord Snow"
+          }
+        },
+        {
+          "value": "JetBrains Mono",
+          "theme": {
+            "Theme": "Catppuccin Latte"
+          }
+        },
+        {
+          "value": "Source Code Pro",
+          "theme": {
+            "Theme": "Solarized Light"
+          }
+        },
+        {
+          "value": "JetBrains Mono",
+          "theme": {
+            "Theme": "Paper"
+          }
+        },
+        {
+          "value": "Source Code Pro",
+          "theme": {
+            "Theme": "Monokai"
           }
         }
       ]
