@@ -24,6 +24,7 @@ const mockHwInfo: HardwareInfo = {
   slowLimit: 75000,
   fastLimit: 85000,
   gpuClockMhz: null,
+  gpuClockLimitMhz: null,
   tcpuTemp: 45,
   cpuPower: null,
   gpuPower: null,
@@ -336,7 +337,7 @@ describe("message handler", () => {
       const result = (response as { id: string; result: { activeProfile: string; activatedBy: string; hwInfo: HardwareInfo | null } }).result;
       expect(result.activeProfile).toBe("default");
       expect(result.activatedBy).toBe("startup");
-      expect(result.hwInfo).toBeNull();
+      expect(result.hwInfo).not.toBeNull();
     });
 
     test("reflects state changes after apply", async () => {

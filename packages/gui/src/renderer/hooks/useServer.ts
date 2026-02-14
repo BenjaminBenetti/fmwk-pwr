@@ -45,20 +45,22 @@ export function useStatus(pollIntervalMs = 1500) {
 export function useConfig() {
   const [hardwareLimits, setHardwareLimits] = useState<HardwareLimits | null>(null);
   const [defaultProfile, setDefaultProfile] = useState<string>('');
+  const [firstTimeSetup, setFirstTimeSetup] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const { config } = await window.fmwkPwr.getConfig();
-        setHardwareLimits(config.hardwareLimits);
-        setDefaultProfile(config.defaultProfile);
-      } catch (e) { console.error('Failed to fetch config:', e); }
-      finally { setLoading(false); }
-    })();
+  const refetchConfig = useCallback(async () => {
+    try {
+      const { config } = await window.fmwkPwr.getConfig();
+      setHardwareLimits(config.hardwareLimits);
+      setDefaultProfile(config.defaultProfile);
+      setFirstTimeSetup(config.firstTimeSetup);
+    } catch (e) { console.error('Failed to fetch config:', e); }
+    finally { setLoading(false); }
   }, []);
 
-  return { hardwareLimits, defaultProfile, loading };
+  useEffect(() => { refetchConfig(); }, [refetchConfig]);
+
+  return { hardwareLimits, defaultProfile, firstTimeSetup, refetchConfig, loading };
 }
 
 export function useConnection() {

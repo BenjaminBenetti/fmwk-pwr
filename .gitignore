@@ -1,4 +1,9 @@
 node_modules/
 dist/
 *.tsbuildinfo
+
+
+# config files
+config/profiles/
 config/config.json
+

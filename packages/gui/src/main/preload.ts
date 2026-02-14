@@ -56,6 +56,10 @@ const api = {
     ipcRenderer.on('connection:state-changed', handler);
     return () => { ipcRenderer.removeListener('connection:state-changed', handler); };
   },
+
+  // Window controls
+  windowClose: (): void => { ipcRenderer.send('window:close'); },
+  windowMinimize: (): void => { ipcRenderer.send('window:minimize'); },
 };
 
 contextBridge.exposeInMainWorld('fmwkPwr', api);

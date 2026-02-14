@@ -1,9 +1,10 @@
-import type { Profile, HardwareLimits } from '../types';
+import type { Profile, HardwareLimits, HardwareInfo } from '../types';
 import { Checkbox, CustomSlider } from './controls';
 
 interface GpuControlsProps {
   gpu: Profile['gpu'];
   hardwareLimits: HardwareLimits;
+  hwInfo: HardwareInfo | null;
   onChange: (gpu: Profile['gpu']) => void;
 }
 
@@ -21,10 +22,13 @@ const perfOptions: { label: string; mode: PerfMode }[] = [
   { label: 'max', mode: 'max' },
 ];
 
-export function GpuControls({ gpu, hardwareLimits, onChange }: GpuControlsProps) {
+export function GpuControls({ gpu, hardwareLimits, hwInfo, onChange }: GpuControlsProps) {
   const mode = getPerfMode(gpu);
   const clockEnabled = mode === 'manual';
-  const clockVal = gpu.clockMhz ?? hardwareLimits.minGpuClockMhz;
+  const gpuClockLimit = hwInfo?.gpuClockLimitMhz ?? null;
+  const clockVal = clockEnabled
+    ? (gpu.clockMhz ?? hardwareLimits.minGpuClockMhz)
+    : (gpuClockLimit ?? hardwareLimits.minGpuClockMhz);
 
   const handleModeChange = (newMode: PerfMode) => {
     switch (newMode) {
@@ -56,7 +60,7 @@ export function GpuControls({ gpu, hardwareLimits, onChange }: GpuControlsProps)
             </span>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
-            {clockEnabled
+            {clockEnabled || gpuClockLimit !== null
               ? `${clockVal} mhz / ${hardwareLimits.maxGpuClockMhz} mhz`
               : '\u2014'}
           </span>

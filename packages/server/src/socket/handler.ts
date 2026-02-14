@@ -57,7 +57,7 @@ export function createHandler(
       case Methods.ProfileApply:
         return handleProfileApply(id, params, state, profileManager);
       case Methods.StatusGet:
-        return handleStatusGet(id, state);
+        return handleStatusGet(id, state, hardware);
       case Methods.ConfigGet:
         return handleConfigGet(id, state);
       case Methods.ConfigUpdate:

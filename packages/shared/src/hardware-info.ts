@@ -12,6 +12,8 @@ export interface HardwareInfo {
   fastLimit: number;
   /** Current GPU clock frequency in MHz from HWMON, or null if unavailable. */
   gpuClockMhz: number | null;
+  /** Configured max GPU clock limit in MHz from pp_od_clk_voltage, or null if unavailable. */
+  gpuClockLimitMhz: number | null;
   /** CPU (Tctl) temperature in degrees C, or null if unavailable. */
   tcpuTemp: number | null;
   /** CPU package power draw in mW, or null if unavailable. */

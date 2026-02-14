@@ -7,8 +7,8 @@
     "fastLimit": null
   },
   "gpu": {
-    "clockMhz": null,
-    "perfLevel": "auto"
+    "clockMhz": 2800,
+    "perfLevel": null
   },
   "tunedProfile": null,
   "match": {

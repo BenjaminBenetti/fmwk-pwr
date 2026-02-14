@@ -32,6 +32,8 @@ export interface FmwkPwrApi {
   loadPreset(name: string): Promise<PresetLoadResult>;
   getConnectionState(): Promise<ConnectionState>;
   onConnectionStateChange(callback: (state: ConnectionState) => void): () => void;
+  windowClose(): void;
+  windowMinimize(): void;
 }
 
 declare global {

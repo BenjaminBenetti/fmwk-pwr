@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useProfiles, useStatus, useConfig, useConnection } from './hooks/useServer';
 import { ProfileSelector } from './components/ProfileSelector';
 import { PowerControls } from './components/PowerControls';
@@ -6,6 +6,8 @@ import { GpuControls } from './components/GpuControls';
 import { SystemProfile } from './components/SystemProfile';
 import { SensorReadout } from './components/SensorReadout';
 import { AutoMatch } from './components/AutoMatch';
+import { SetupModal } from './components/SetupModal';
+import { NewProfileModal } from './components/NewProfileModal';
 import type { Profile } from './types';
 
 const DEFAULT_PROFILE: Profile = {
@@ -16,7 +18,26 @@ const DEFAULT_PROFILE: Profile = {
   match: { enabled: false, processPatterns: [], priority: 0 },
 };
 
-const THEMES = ['default', 'industrial', 'swiss', 'warm-retro'] as const;
+function Titlebar() {
+  return (
+    <div
+      className="flex items-center justify-between h-[32px] -m-3 mb-0 px-3 bg-bg-secondary border-b border-border rounded-t-[12px]"
+      style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
+    >
+      <span className="text-[11px] font-mono text-text-muted tracking-wider">fmwk-pwr</span>
+      <div className="flex" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+        <button
+          onClick={() => window.fmwkPwr.windowMinimize()}
+          className="w-[32px] h-[32px] flex items-center justify-center bg-transparent border-none text-text-dim hover:text-text-primary hover:bg-bg-tertiary cursor-pointer text-[14px]"
+        >&#x2013;</button>
+        <button
+          onClick={() => window.fmwkPwr.windowClose()}
+          className="w-[32px] h-[32px] flex items-center justify-center bg-transparent border-none text-text-dim hover:text-danger hover:bg-bg-tertiary cursor-pointer text-[14px]"
+        >&#x2715;</button>
+      </div>
+    </div>
+  );
+}
 
 function Divider() {
   return <div className="w-full h-px bg-border" />;
@@ -25,12 +46,13 @@ function Divider() {
 export function App() {
   const { profiles, loading: profilesLoading, refetch: refetchProfiles } = useProfiles();
   const { activeProfile, hwInfo } = useStatus(1500);
-  const { hardwareLimits, defaultProfile, loading: configLoading } = useConfig();
+  const { hardwareLimits, defaultProfile, firstTimeSetup, refetchConfig, loading: configLoading } = useConfig();
   const connectionState = useConnection();
 
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [originalProfile, setOriginalProfile] = useState<Profile | null>(null);
   const [applying, setApplying] = useState(false);
+  const [showNewProfile, setShowNewProfile] = useState(false);
   const [theme, setTheme] = useState('default');
 
   // Apply theme to document
@@ -38,18 +60,15 @@ export function App() {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
-  const handleThemeToggle = useCallback(() => {
-    setTheme((prev) => {
-      const idx = THEMES.indexOf(prev as typeof THEMES[number]);
-      return THEMES[(idx + 1) % THEMES.length];
-    });
-  }, []);
-
-  // Load active profile into editor when it changes or profiles load
+  // Auto-load active profile only when the server's activeProfile changes
+  // (initial load or auto-match switch), not when the profiles list updates
+  const prevActiveProfile = useRef<string | null>(null);
   useEffect(() => {
     if (!activeProfile || profiles.length === 0) return;
+    if (activeProfile === prevActiveProfile.current) return;
+    prevActiveProfile.current = activeProfile;
     const target = profiles.find((p) => p.name === activeProfile);
-    if (target && (!editProfile || editProfile.name !== activeProfile)) {
+    if (target) {
       setEditProfile(structuredClone(target));
       setOriginalProfile(structuredClone(target));
     }
@@ -57,6 +76,8 @@ export function App() {
 
   const isDirty = editProfile !== null && originalProfile !== null &&
     JSON.stringify(editProfile) !== JSON.stringify(originalProfile);
+  const isNotActive = editProfile !== null && editProfile.name !== activeProfile;
+  const needsApply = isDirty || isNotActive;
 
   const handleSelectProfile = useCallback(async (name: string) => {
     const target = profiles.find((p) => p.name === name);
@@ -66,16 +87,21 @@ export function App() {
     }
   }, [profiles]);
 
-  const handleNewProfile = useCallback(async () => {
-    const name = prompt('Profile name:');
-    if (!name || !/^[a-zA-Z0-9][a-zA-Z0-9-]*$/.test(name)) return;
+  const handleNewProfile = useCallback(() => {
+    setShowNewProfile(true);
+  }, []);
+
+  const handleCreateProfile = useCallback(async (name: string, copyFrom: string | null) => {
     try {
-      const { profile } = await window.fmwkPwr.createProfile({ ...DEFAULT_PROFILE, name });
+      const source = copyFrom ? profiles.find((p) => p.name === copyFrom) : null;
+      const base = source ? structuredClone(source) : { ...DEFAULT_PROFILE };
+      const { profile } = await window.fmwkPwr.createProfile({ ...base, name });
       await refetchProfiles();
       setEditProfile(structuredClone(profile));
       setOriginalProfile(structuredClone(profile));
+      setShowNewProfile(false);
     } catch (e) { console.error('Failed to create profile:', e); }
-  }, [refetchProfiles]);
+  }, [profiles, refetchProfiles]);
 
   const handleDeleteProfile = useCallback(async (name: string) => {
     try {
@@ -111,6 +137,16 @@ export function App() {
 
   return (
     <div className="p-3 flex flex-col gap-3 text-[13px] select-none bg-bg-primary min-h-screen font-sans">
+      {firstTimeSetup && <SetupModal onComplete={refetchConfig} />}
+      {showNewProfile && (
+        <NewProfileModal
+          profiles={profiles}
+          onCancel={() => setShowNewProfile(false)}
+          onCreate={handleCreateProfile}
+        />
+      )}
+      <Titlebar />
+
       {connectionState !== 'connected' && (
         <div className={`px-3 py-1.5 rounded-theme text-[12px] font-sans border ${
           connectionState === 'connecting'
@@ -129,7 +165,8 @@ export function App() {
         onSelect={handleSelectProfile}
         onNew={handleNewProfile}
         onDelete={handleDeleteProfile}
-        onThemeToggle={handleThemeToggle}
+        theme={theme}
+        onThemeChange={setTheme}
       />
 
       {editProfile && (
@@ -138,6 +175,7 @@ export function App() {
           <PowerControls
             power={editProfile.power}
             hardwareLimits={hardwareLimits}
+            hwInfo={hwInfo}
             onChange={(power) => setEditProfile({ ...editProfile, power })}
           />
 
@@ -145,6 +183,7 @@ export function App() {
           <GpuControls
             gpu={editProfile.gpu}
             hardwareLimits={hardwareLimits}
+            hwInfo={hwInfo}
             onChange={(gpu) => setEditProfile({ ...editProfile, gpu })}
           />
 
@@ -166,14 +205,14 @@ export function App() {
           <Divider />
           <button
             onClick={handleApply}
-            disabled={!isDirty && !applying}
+            disabled={!needsApply && !applying}
             className={`w-full h-[40px] rounded-theme text-[12px] tracking-[0.5px] font-sans cursor-pointer transition-colors ${
-              isDirty || applying
+              needsApply || applying
                 ? 'bg-accent text-accent-on border-none'
                 : 'bg-transparent border border-border text-text-dim'
             }`}
           >
-            {applying ? 'applying...' : isDirty ? 'apply' : 'applied'}
+            {applying ? 'applying...' : needsApply ? 'apply' : 'applied'}
           </button>
         </>
       )}

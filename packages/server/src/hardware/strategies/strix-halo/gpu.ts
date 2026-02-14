@@ -65,6 +65,20 @@ export class GpuController {
       return null;
     }
   }
+
+  /**
+   * Read the configured max GPU clock limit from pp_od_clk_voltage.
+   * Parses the OD_SCLK section for the highest level (level 1).
+   * @returns Configured max clock in MHz, or null if unreadable
+   */
+  async readClockLimit(): Promise<number | null> {
+    try {
+      const raw = await Bun.file(join(this.sysfsPath, "pp_od_clk_voltage")).text();
+      return parseClockLimit(raw);
+    } catch {
+      return null;
+    }
+  }
 }
 
 /**
@@ -85,4 +99,35 @@ function parseActiveClock(dpmOutput: string): number | null {
     }
   }
   return null;
+}
+
+/**
+ * Parse the configured max clock limit from pp_od_clk_voltage output.
+ * Finds the highest clock value in the OD_SCLK section.
+ * Format example:
+ *   OD_SCLK:
+ *   0:        600Mhz
+ *   1:       2800Mhz
+ *   OD_RANGE:
+ *   ...
+ * @param odOutput - Raw content of the pp_od_clk_voltage sysfs file
+ * @returns Configured max clock in MHz, or null if not parseable
+ */
+function parseClockLimit(odOutput: string): number | null {
+  const lines = odOutput.split("\n");
+  let inSclk = false;
+  let maxClock: number | null = null;
+
+  for (const line of lines) {
+    if (line.startsWith("OD_SCLK")) { inSclk = true; continue; }
+    if (inSclk && line.match(/^OD_|^\s*$/)) break;
+    if (inSclk) {
+      const match = line.match(/(\d+)\s*[Mm][Hh]z/);
+      if (match) {
+        const mhz = parseInt(match[1], 10);
+        if (maxClock === null || mhz > maxClock) maxClock = mhz;
+      }
+    }
+  }
+  return maxClock;
 }

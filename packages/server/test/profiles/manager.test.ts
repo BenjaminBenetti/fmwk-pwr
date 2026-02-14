@@ -21,6 +21,7 @@ const mockHwInfo: HardwareInfo = {
   slowLimit: 75000,
   fastLimit: 85000,
   gpuClockMhz: null,
+  gpuClockLimitMhz: null,
   tcpuTemp: 45,
   cpuPower: null,
   gpuPower: null,

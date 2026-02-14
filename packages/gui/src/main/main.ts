@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SocketClient } from './socket-client.js';
@@ -12,10 +12,11 @@ let mainWindow: BrowserWindow | null = null;
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 380,
-    height: 700,
-    minWidth: 360,
-    minHeight: 500,
-    resizable: true,
+    height: 920,
+    resizable: false,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
     autoHideMenuBar: true,
     title: 'fmwk-pwr',
     webPreferences: {
@@ -38,6 +39,9 @@ function createWindow(): void {
 
 registerIpcHandlers(client);
 setupConnectionForwarding(client, () => mainWindow);
+
+ipcMain.on('window:close', () => mainWindow?.close());
+ipcMain.on('window:minimize', () => mainWindow?.minimize());
 
 app.whenReady().then(() => {
   createWindow();

@@ -98,6 +98,16 @@
   --warning: #D97706;
 }
 
+/* Rounded window — html/body must be transparent for window transparency */
+html, body {
+  background: transparent !important;
+}
+
+#root {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
 /* Custom range slider */
 input[type="range"] {
   -webkit-appearance: none;

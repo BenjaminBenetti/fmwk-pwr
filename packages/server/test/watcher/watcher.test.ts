@@ -23,6 +23,7 @@ const dummyHwInfo: HardwareInfo = {
   slowLimit: 25000,
   fastLimit: 35000,
   gpuClockMhz: null,
+  gpuClockLimitMhz: null,
   tcpuTemp: null,
   cpuPower: null,
   gpuPower: null,
