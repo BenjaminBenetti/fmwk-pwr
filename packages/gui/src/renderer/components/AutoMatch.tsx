@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import type { Profile } from '../types';
 import { Checkbox } from './controls';
 
@@ -8,51 +8,113 @@ interface AutoMatchProps {
 }
 
 export function AutoMatch({ match, onChange }: AutoMatchProps) {
-  const [newPattern, setNewPattern] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const infoRef = useRef<HTMLDivElement>(null);
 
-  const addPattern = () => {
-    const trimmed = newPattern.trim();
-    if (!trimmed) return;
-    onChange({ ...match, processPatterns: [...match.processPatterns, trimmed] });
-    setNewPattern('');
+  const pattern = match.processPatterns[0] ?? '';
+
+  const setPattern = (value: string) => {
+    const trimmed = value.trim();
+    onChange({
+      ...match,
+      processPatterns: trimmed ? [trimmed] : [],
+    });
   };
 
-  const removePattern = (index: number) => {
-    onChange({ ...match, processPatterns: match.processPatterns.filter((_, i) => i !== index) });
-  };
+  if (!expanded) {
+    return (
+      <div
+        className="flex items-center justify-between cursor-pointer"
+        onClick={() => setExpanded(true)}
+      >
+        <span className="text-[12px] text-text-muted font-sans">// auto_match</span>
+        <span className="text-[14px] text-text-dim font-sans">&gt;</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <span className="text-[12px] text-text-muted font-sans">// auto_match</span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <span className={`text-[11px] font-sans ${match.enabled ? 'text-text-primary' : 'text-text-dim'}`}>enabled</span>
           <Checkbox checked={match.enabled} onChange={(v) => onChange({ ...match, enabled: v })} />
-          <span className={`text-[13px] font-sans ${match.enabled ? 'text-text-primary' : 'text-text-dim'}`}>enabled</span>
+          <span
+            className="text-[12px] text-text-dim font-sans cursor-pointer"
+            onClick={() => setExpanded(false)}
+          >v</span>
         </div>
       </div>
 
+      {/* Fields */}
       <div className={match.enabled ? '' : 'opacity-40 pointer-events-none'}>
+        {/* Pattern */}
         <div className="flex flex-col gap-1">
-          {match.processPatterns.map((pat, i) => (
-            <div key={i} className="flex gap-1 items-center">
-              <code className="flex-1 bg-bg-tertiary px-2 py-0.5 rounded-theme text-[12px] font-mono truncate text-text-primary">{pat}</code>
-              <button onClick={() => removePattern(i)} className="text-text-dim hover:text-danger text-[12px] px-1 bg-transparent border-none cursor-pointer">&times;</button>
-            </div>
-          ))}
-          <div className="flex gap-1">
-            <input type="text" value={newPattern} onChange={(e) => setNewPattern(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && addPattern()}
-              placeholder="regex pattern..."
-              className="flex-1 bg-transparent border border-border rounded-theme px-2 py-0.5 text-[12px] font-mono text-text-primary outline-none" />
-            <button onClick={addPattern} className="bg-transparent border border-border hover:border-text-muted px-2 py-0.5 rounded-theme text-[12px] text-text-muted cursor-pointer">+</button>
-          </div>
+          <span className="text-[12px] text-text-primary font-sans">pattern</span>
+          <input
+            type="text"
+            value={pattern}
+            onChange={(e) => setPattern(e.target.value)}
+            placeholder="regex pattern..."
+            style={{ fontFamily: 'var(--font-mono)' }}
+            className="w-full bg-transparent border border-border rounded-theme h-[40px] px-3 text-[12px] text-text-primary outline-none"
+          />
         </div>
 
-        <div className="flex items-center gap-2 mt-2">
-          <span className="text-[12px] text-text-muted font-sans">priority</span>
-          <input type="number" value={match.priority}
-            onChange={(e) => onChange({ ...match, priority: Number(e.target.value) })}
-            className="w-16 bg-transparent border border-border rounded-theme px-2 py-0.5 text-[13px] text-text-primary text-center font-mono outline-none" />
+        {/* Priority */}
+        <div className="flex flex-col gap-1 mt-2">
+          <div className="flex items-center gap-1.5 relative">
+            <span className="text-[12px] text-text-primary font-sans">priority</span>
+            <div
+              ref={infoRef}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+              className="cursor-help"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={showTooltip ? 'var(--accent)' : 'var(--text-dim)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+            </div>
+            {showTooltip && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: 0,
+                  marginBottom: 6,
+                  width: 260,
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--border-radius)',
+                  padding: 10,
+                  zIndex: 50,
+                  boxShadow: '0 4px 16px #00000060',
+                }}
+              >
+                <span style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-primary)', fontFamily: 'var(--font)' }}>
+                  Determines rule precedence when multiple patterns match the same process. Lower values = higher priority.
+                </span>
+              </div>
+            )}
+          </div>
+          <input
+            type="text"
+            inputMode="numeric"
+            value={match.priority}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === '' || /^\d+$/.test(v)) {
+                onChange({ ...match, priority: v === '' ? 0 : Number(v) });
+              }
+            }}
+            style={{ fontFamily: 'var(--font-mono)' }}
+            className="w-20 bg-transparent border border-border rounded-theme h-[40px] px-3 text-[12px] text-text-primary outline-none"
+          />
         </div>
       </div>
     </div>

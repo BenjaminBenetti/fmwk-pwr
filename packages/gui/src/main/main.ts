@@ -13,6 +13,7 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 380,
     height: 920,
+    useContentSize: true,
     resizable: false,
     frame: false,
     transparent: true,
@@ -42,6 +43,9 @@ setupConnectionForwarding(client, () => mainWindow);
 
 ipcMain.on('window:close', () => mainWindow?.close());
 ipcMain.on('window:minimize', () => mainWindow?.minimize());
+ipcMain.on('window:set-size', (_e, width: number, height: number) => {
+  mainWindow?.setContentSize(width, height);
+});
 
 app.whenReady().then(() => {
   createWindow();

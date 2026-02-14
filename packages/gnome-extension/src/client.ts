@@ -10,6 +10,7 @@ export interface HardwareInfo {
   slowLimit: number;
   fastLimit: number;
   gpuClockMhz: number | null;
+  gpuClockLimitMhz: number | null;
   tcpuTemp: number | null;
   cpuPower: number | null;
   gpuPower: number | null;

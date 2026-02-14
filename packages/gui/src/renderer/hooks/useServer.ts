@@ -46,6 +46,7 @@ export function useConfig() {
   const [hardwareLimits, setHardwareLimits] = useState<HardwareLimits | null>(null);
   const [defaultProfile, setDefaultProfile] = useState<string>('');
   const [firstTimeSetup, setFirstTimeSetup] = useState(false);
+  const [theme, setTheme] = useState<string>('default');
   const [loading, setLoading] = useState(true);
 
   const refetchConfig = useCallback(async () => {
@@ -54,13 +55,21 @@ export function useConfig() {
       setHardwareLimits(config.hardwareLimits);
       setDefaultProfile(config.defaultProfile);
       setFirstTimeSetup(config.firstTimeSetup);
+      setTheme(config.user?.theme ?? 'default');
     } catch (e) { console.error('Failed to fetch config:', e); }
     finally { setLoading(false); }
   }, []);
 
+  const updateTheme = useCallback(async (newTheme: string) => {
+    setTheme(newTheme);
+    try {
+      await window.fmwkPwr.updateConfig({ user: { theme: newTheme } });
+    } catch (e) { console.error('Failed to persist theme:', e); }
+  }, []);
+
   useEffect(() => { refetchConfig(); }, [refetchConfig]);
 
-  return { hardwareLimits, defaultProfile, firstTimeSetup, refetchConfig, loading };
+  return { hardwareLimits, defaultProfile, firstTimeSetup, theme, updateTheme, refetchConfig, loading };
 }
 
 export function useConnection() {

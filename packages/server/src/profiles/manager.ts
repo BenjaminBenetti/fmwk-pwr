@@ -1,5 +1,6 @@
 import {
   existsSync,
+  mkdirSync,
   readFileSync,
   writeFileSync,
   readdirSync,
@@ -229,6 +230,9 @@ export class ProfileManager {
    * @param profile - The profile to persist
    */
   private saveToDisk(profile: Profile): void {
+    if (!existsSync(this.profilesDir)) {
+      mkdirSync(this.profilesDir, { recursive: true });
+    }
     const filePath = join(this.profilesDir, `${profile.name}.json`);
     writeFileSync(filePath, JSON.stringify(profile, null, 2) + "\n");
   }

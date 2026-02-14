@@ -1,13 +1,12 @@
 {
   "name": "default",
-  "description": "Auto power limits, GPU at auto",
   "power": {
     "stapmLimit": null,
     "slowLimit": null,
     "fastLimit": null
   },
   "gpu": {
-    "clockMhz": 2800,
+    "clockMhz": null,
     "perfLevel": null
   },
   "tunedProfile": null,

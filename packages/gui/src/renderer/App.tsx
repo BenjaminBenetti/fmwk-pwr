@@ -8,6 +8,7 @@ import { SensorReadout } from './components/SensorReadout';
 import { AutoMatch } from './components/AutoMatch';
 import { SetupModal } from './components/SetupModal';
 import { NewProfileModal } from './components/NewProfileModal';
+import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import type { Profile } from './types';
 
 const DEFAULT_PROFILE: Profile = {
@@ -46,14 +47,14 @@ function Divider() {
 export function App() {
   const { profiles, loading: profilesLoading, refetch: refetchProfiles } = useProfiles();
   const { activeProfile, hwInfo } = useStatus(1500);
-  const { hardwareLimits, defaultProfile, firstTimeSetup, refetchConfig, loading: configLoading } = useConfig();
+  const { hardwareLimits, defaultProfile, firstTimeSetup, theme, updateTheme, refetchConfig, loading: configLoading } = useConfig();
   const connectionState = useConnection();
 
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [originalProfile, setOriginalProfile] = useState<Profile | null>(null);
   const [applying, setApplying] = useState(false);
   const [showNewProfile, setShowNewProfile] = useState(false);
-  const [theme, setTheme] = useState('default');
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   // Apply theme to document
   useEffect(() => {
@@ -103,15 +104,25 @@ export function App() {
     } catch (e) { console.error('Failed to create profile:', e); }
   }, [profiles, refetchProfiles]);
 
-  const handleDeleteProfile = useCallback(async (name: string) => {
+  const handleRequestDelete = useCallback((name: string) => {
+    setDeleteTarget(name);
+  }, []);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!deleteTarget) return;
     try {
-      await window.fmwkPwr.deleteProfile(name);
+      await window.fmwkPwr.deleteProfile(deleteTarget);
+      const { profiles: updated } = await window.fmwkPwr.listProfiles();
       await refetchProfiles();
-      if (activeProfile && activeProfile !== name) {
-        handleSelectProfile(activeProfile);
+      // If we deleted the profile we were editing, switch to another one
+      if (editProfile?.name === deleteTarget && updated.length > 0) {
+        const next = updated.find((p) => p.name === activeProfile) ?? updated[0];
+        setEditProfile(structuredClone(next));
+        setOriginalProfile(structuredClone(next));
       }
     } catch (e) { console.error('Failed to delete profile:', e); }
-  }, [refetchProfiles, activeProfile, handleSelectProfile]);
+    finally { setDeleteTarget(null); }
+  }, [deleteTarget, refetchProfiles, activeProfile, editProfile?.name]);
 
   const handleApply = useCallback(async () => {
     if (!editProfile) return;
@@ -125,6 +136,22 @@ export function App() {
     finally { setApplying(false); }
   }, [editProfile, refetchProfiles]);
 
+  // Auto-resize window to fit content
+  const rootRef = useRef<HTMLDivElement>(null);
+  const lastHeight = useRef(0);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const tid = setTimeout(() => {
+      const height = el.scrollHeight;
+      if (height !== lastHeight.current) {
+        lastHeight.current = height;
+        window.fmwkPwr.windowSetSize(380, height);
+      }
+    }, 25);
+    return () => clearTimeout(tid);
+  });
+
   if (profilesLoading || configLoading || !hardwareLimits) {
     return (
       <div className="p-3 flex items-center justify-center h-screen bg-bg-primary">
@@ -136,13 +163,20 @@ export function App() {
   }
 
   return (
-    <div className="p-3 flex flex-col gap-3 text-[13px] select-none bg-bg-primary min-h-screen font-sans">
+    <div ref={rootRef} className="p-3 flex flex-col gap-3 text-[13px] select-none bg-bg-primary font-sans">
       {firstTimeSetup && <SetupModal onComplete={refetchConfig} />}
       {showNewProfile && (
         <NewProfileModal
           profiles={profiles}
           onCancel={() => setShowNewProfile(false)}
           onCreate={handleCreateProfile}
+        />
+      )}
+      {deleteTarget && (
+        <DeleteConfirmModal
+          profileName={deleteTarget}
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
         />
       )}
       <Titlebar />
@@ -164,9 +198,9 @@ export function App() {
         currentName={editProfile?.name ?? ''}
         onSelect={handleSelectProfile}
         onNew={handleNewProfile}
-        onDelete={handleDeleteProfile}
+        onDelete={handleRequestDelete}
         theme={theme}
-        onThemeChange={setTheme}
+        onThemeChange={updateTheme}
       />
 
       {editProfile && (

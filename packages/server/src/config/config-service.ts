@@ -5,6 +5,7 @@ import {
   type ConfigUpdateParams,
 } from "@fmwk-pwr/shared";
 import type { ServerState } from "../state.js";
+import { saveConfig } from "./config.js";
 
 // =====================================
 // Helpers
@@ -67,5 +68,12 @@ export function handleConfigUpdate(id: string, params: unknown, state: ServerSta
   if (config.defaultProfile !== undefined) {
     state.config.defaultProfile = config.defaultProfile;
   }
+  if (config.user !== undefined) {
+    if (typeof config.user !== "object" || config.user === null) {
+      return errorResponse(id, ErrorCode.InvalidParams, "user must be an object");
+    }
+    state.config.user = { ...state.config.user, ...config.user };
+  }
+  saveConfig(state.configPath, state.config);
   return { id, result: { config: state.config } };
 }

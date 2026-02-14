@@ -58,6 +58,7 @@ function createState(activeProfile = "default"): ServerState {
         minGpuClockMhz: 200,
         maxGpuClockMhz: 3000,
       },
+      user: { theme: "default" },
     },
     configPath: "",
   };

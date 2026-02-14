@@ -50,7 +50,7 @@
   --slider-thumb: #F5F5F0;
   --slider-track: #2D2D2D;
   --slider-gradient: linear-gradient(to right, #FFD60040, #FF6B3540 60%, #FF444440);
-  --text-dim: #4D4D4D;
+  --text-dim: #5C5C5C;
   --text-muted: #6B6B6B;
   --text-primary: #F5F5F0;
   --warning: #F59E0B;
@@ -100,7 +100,12 @@
 
 /* Rounded window — html/body must be transparent for window transparency */
 html, body {
+  margin: 0;
   background: transparent !important;
+}
+
+html {
+  overflow: hidden;
 }
 
 #root {

@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import type { Profile } from '../types';
+import { Dropdown } from './controls';
 
 interface NewProfileModalProps {
   profiles: Profile[];
@@ -12,6 +13,11 @@ const NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9-]*$/;
 export function NewProfileModal({ profiles, onCancel, onCreate }: NewProfileModalProps) {
   const [name, setName] = useState('');
   const [copyFrom, setCopyFrom] = useState<string>('none');
+
+  const copyFromOptions = useMemo(() => [
+    { value: 'none', label: 'none' },
+    ...profiles.map((p) => ({ value: p.name, label: p.name })),
+  ], [profiles]);
 
   const trimmed = name.trim();
   const nameValid = NAME_RE.test(trimmed);
@@ -64,12 +70,23 @@ export function NewProfileModal({ profiles, onCancel, onCreate }: NewProfileModa
           // new_profile
         </span>
 
+        <span
+          style={{
+            color: 'var(--text-muted)',
+            fontSize: 12,
+            fontFamily: 'var(--font)',
+            lineHeight: 1.5,
+          }}
+        >
+          enter a name for the new profile
+        </span>
+
         {/* Name input */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label
             style={{
-              color: 'var(--text-muted)',
-              fontSize: 11,
+              color: 'var(--text-primary)',
+              fontSize: 12,
               fontFamily: 'var(--font)',
             }}
           >
@@ -82,16 +99,16 @@ export function NewProfileModal({ profiles, onCancel, onCreate }: NewProfileModa
             autoFocus
             placeholder="my-profile"
             style={{
-              height: 36,
-              background: 'var(--bg-tertiary)',
+              height: 40,
+              background: 'transparent',
               border: trimmed && !nameValid
                 ? '1px solid var(--danger)'
                 : '1px solid var(--border)',
               borderRadius: 'var(--border-radius)',
-              padding: '0 10px',
+              padding: '0 12px',
               color: 'var(--text-primary)',
-              fontSize: 13,
-              fontFamily: 'var(--font)',
+              fontSize: 12,
+              fontFamily: 'var(--font-mono)',
               outline: 'none',
               width: '100%',
               boxSizing: 'border-box',
@@ -125,45 +142,18 @@ export function NewProfileModal({ profiles, onCancel, onCreate }: NewProfileModa
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
           <label
             style={{
-              color: 'var(--text-muted)',
-              fontSize: 11,
+              color: 'var(--text-primary)',
+              fontSize: 12,
               fontFamily: 'var(--font)',
             }}
           >
             copy settings from
           </label>
-          <select
+          <Dropdown
+            options={copyFromOptions}
             value={copyFrom}
-            onChange={(e) => setCopyFrom(e.target.value)}
-            style={{
-              height: 36,
-              background: 'var(--bg-tertiary)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--border-radius)',
-              padding: '0 10px',
-              color: 'var(--text-primary)',
-              fontSize: 13,
-              fontFamily: 'var(--font)',
-              outline: 'none',
-              appearance: 'none',
-              cursor: 'pointer',
-              width: '100%',
-              boxSizing: 'border-box',
-            }}
-          >
-            <option value="none" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
-              none
-            </option>
-            {profiles.map((p) => (
-              <option
-                key={p.name}
-                value={p.name}
-                style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
-              >
-                {p.name}
-              </option>
-            ))}
-          </select>
+            onChange={setCopyFrom}
+          />
         </div>
 
         {/* Buttons */}
@@ -173,12 +163,13 @@ export function NewProfileModal({ profiles, onCancel, onCreate }: NewProfileModa
             onClick={onCancel}
             style={{
               flex: 1,
-              height: 36,
+              height: 40,
               background: 'transparent',
               border: '1px solid var(--border)',
               borderRadius: 'var(--border-radius)',
-              color: 'var(--text-muted)',
+              color: 'var(--text-dim)',
               fontSize: 12,
+              letterSpacing: 0.5,
               fontFamily: 'var(--font)',
               cursor: 'pointer',
             }}
@@ -191,11 +182,12 @@ export function NewProfileModal({ profiles, onCancel, onCreate }: NewProfileModa
             disabled={!canCreate}
             style={{
               flex: 1,
-              height: 36,
+              height: 40,
               background: canCreate ? 'var(--accent)' : 'var(--bg-tertiary)',
               color: canCreate ? 'var(--accent-on)' : 'var(--text-dim)',
               fontSize: 12,
               fontWeight: 700,
+              letterSpacing: 0.5,
               fontFamily: 'var(--font)',
               borderRadius: 'var(--border-radius)',
               border: 'none',

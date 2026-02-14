@@ -60,6 +60,7 @@ const api = {
   // Window controls
   windowClose: (): void => { ipcRenderer.send('window:close'); },
   windowMinimize: (): void => { ipcRenderer.send('window:minimize'); },
+  windowSetSize: (width: number, height: number): void => { ipcRenderer.send('window:set-size', width, height); },
 };
 
 contextBridge.exposeInMainWorld('fmwkPwr', api);

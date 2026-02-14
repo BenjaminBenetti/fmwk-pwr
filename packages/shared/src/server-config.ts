@@ -4,6 +4,12 @@ import type { HardwareLimits } from "./hardware-limits.js";
 // Server Configuration
 // =====================================
 
+/** User-facing preferences persisted in the server config. */
+export interface UserConfig {
+  /** GUI theme name (e.g. "default", "industrial", "swiss", "warm-retro"). */
+  theme: string;
+}
+
 /** Server-side configuration controlling paths, polling intervals, and the default profile. */
 export interface ServerConfig {
   /** Absolute sysfs path to the amdgpu device directory (e.g. "/sys/class/drm/card1/device"). */
@@ -18,4 +24,6 @@ export interface ServerConfig {
   firstTimeSetup: boolean;
   /** Hardware-specific bounds for validating power and GPU settings. */
   hardwareLimits: HardwareLimits;
+  /** User-facing preferences (theme, etc.). */
+  user: UserConfig;
 }

@@ -79,6 +79,7 @@ function createState(): ServerState {
         minGpuClockMhz: 200,
         maxGpuClockMhz: 3_000,
       },
+      user: { theme: "default" },
     },
   };
 }

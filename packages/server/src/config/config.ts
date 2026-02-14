@@ -1,12 +1,16 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
-import type { HardwareLimits, ServerConfig } from "@fmwk-pwr/shared";
+import type { HardwareLimits, ServerConfig, UserConfig } from "@fmwk-pwr/shared";
 
 // =====================================
 // Configuration Defaults
 // =====================================
 
 const SYSTEM_CONFIG_PATH = "/etc/fmwk-pwr/config.json";
+
+const DEFAULT_USER: UserConfig = {
+  theme: "default",
+};
 
 const DEFAULT_CONFIG: ServerConfig = {
   gpuSysfsPath: "/sys/class/drm/card1/device",
@@ -22,6 +26,7 @@ const DEFAULT_CONFIG: ServerConfig = {
     minGpuClockMhz: 200,
     maxGpuClockMhz: 3_000,
   },
+  user: { ...DEFAULT_USER },
 };
 
 // =====================================
@@ -149,6 +154,20 @@ function validateConfig(raw: unknown): ServerConfig {
       }
     }
     config.hardwareLimits = hl as unknown as HardwareLimits;
+  }
+
+  if ("user" in obj) {
+    if (typeof obj.user !== "object" || obj.user === null) {
+      throw new Error("user must be an object");
+    }
+    const u = obj.user as Record<string, unknown>;
+    config.user = { ...DEFAULT_USER };
+    if ("theme" in u) {
+      if (typeof u.theme !== "string") {
+        throw new Error("user.theme must be a string");
+      }
+      config.user.theme = u.theme;
+    }
   }
 
   return config;

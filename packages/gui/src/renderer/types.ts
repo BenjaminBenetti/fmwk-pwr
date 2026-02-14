@@ -34,6 +34,7 @@ export interface FmwkPwrApi {
   onConnectionStateChange(callback: (state: ConnectionState) => void): () => void;
   windowClose(): void;
   windowMinimize(): void;
+  windowSetSize(width: number, height: number): void;
 }
 
 declare global {

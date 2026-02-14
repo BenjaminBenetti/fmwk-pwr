@@ -41,6 +41,18 @@ async function main(): Promise<void> {
   const profileManager = new ProfileManager(profilesDir, hardware);
   profileManager.loadAll();
 
+  // If no profiles exist, create a default with all settings off
+  if (profileManager.list().length === 0) {
+    console.log("[main] No profiles found, creating default profile");
+    await profileManager.create({
+      name: config.defaultProfile,
+      power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+      gpu: { clockMhz: null, perfLevel: null },
+      tunedProfile: null,
+      match: { enabled: false, processPatterns: [], priority: 0 },
+    });
+  }
+
   // Apply default profile on startup
   try {
     const { hwInfo } = await profileManager.apply(config.defaultProfile);

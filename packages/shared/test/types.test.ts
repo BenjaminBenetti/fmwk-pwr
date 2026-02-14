@@ -73,11 +73,15 @@ describe("shared type exports", () => {
         minGpuClockMhz: 200,
         maxGpuClockMhz: 3000,
       },
+      user: {
+        theme: "default",
+      },
     };
     expect(config.defaultProfile).toBe("default");
     expect(config.watcherIntervalMs).toBe(5000);
     expect(config.firstTimeSetup).toBe(true);
     expect(config.hardwareLimits.maxStapmMw).toBe(120000);
+    expect(config.user.theme).toBe("default");
   });
 
   test("HardwareInfo type can be constructed with nullable fields", () => {
