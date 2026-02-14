@@ -8,7 +8,7 @@
       "y": -29,
       "name": "fmwk-pwr",
       "theme": {
-        "Theme": "Industrial"
+        "Theme": "Warm Retro"
       },
       "clip": true,
       "width": 380,
@@ -18437,7 +18437,11 @@
       "Default",
       "Industrial",
       "Swiss",
-      "Warm Retro"
+      "Warm Retro",
+      "Nord Aurora",
+      "Neon Flux",
+      "Catppuccin Mocha",
+      "Tokyo Night"
     ]
   },
   "variables": {
@@ -18466,6 +18470,30 @@
           "value": "#D4856A",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#88C0D0",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#00E5FF",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#CBA6F7",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#7AA2F7",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18496,6 +18524,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "#2E3440",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#050510",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#1E1E2E",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#1A1B26",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18524,6 +18576,30 @@
           "value": "#E8E0D4",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#2E3440",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#050510",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#1E1E2E",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#1A1B26",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18554,6 +18630,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "#3B4252",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#0A0A1F",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#313244",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#24283B",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18582,6 +18682,30 @@
           "value": "#D2C9BC",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#434C5E",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#12122E",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#45475A",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#292E42",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18612,6 +18736,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "#4C566A",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#1A1A3E",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#585B70",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#3B4261",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18640,6 +18788,30 @@
           "value": "#C0392B",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#BF616A",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#FF0055",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#F38BA8",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#F7768E",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18670,6 +18842,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "#ECEFF4",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#E0E0FF",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#CDD6F4",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#C0CAF5",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18698,6 +18894,30 @@
           "value": "#D2C9BC",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#434C5E",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#12122E",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#45475A",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#292E42",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18752,6 +18972,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "#616E88",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#4A4A70",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#6C7086",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#565F89",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18780,6 +19024,30 @@
           "value": "#5A5551",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#7B88A1",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#7070A0",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#A6ADC8",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#9AA5CE",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18810,6 +19078,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "#ECEFF4",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#E0E0FF",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#CDD6F4",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#C0CAF5",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18838,6 +19130,30 @@
           "value": "#D97706",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "#EBCB8B",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "#FFE500",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "#F9E2AF",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "#E0AF68",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
@@ -18868,6 +19184,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": 4,
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": 0,
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": 8,
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": 6,
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18897,6 +19237,30 @@
           "theme": {
             "Theme": "Warm Retro"
           }
+        },
+        {
+          "value": "Fira Code",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "Exo 2",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "Inter",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "Inter",
+          "theme": {
+            "Theme": "Tokyo Night"
+          }
         }
       ]
     },
@@ -18925,6 +19289,30 @@
           "value": "Inter",
           "theme": {
             "Theme": "Warm Retro"
+          }
+        },
+        {
+          "value": "Fira Code",
+          "theme": {
+            "Theme": "Nord Aurora"
+          }
+        },
+        {
+          "value": "Fira Code",
+          "theme": {
+            "Theme": "Neon Flux"
+          }
+        },
+        {
+          "value": "JetBrains Mono",
+          "theme": {
+            "Theme": "Catppuccin Mocha"
+          }
+        },
+        {
+          "value": "JetBrains Mono",
+          "theme": {
+            "Theme": "Tokyo Night"
           }
         }
       ]
