@@ -22,18 +22,20 @@ const DEFAULT_PROFILE: Profile = {
 function Titlebar() {
   return (
     <div
-      className="flex items-center justify-between h-[32px] -m-3 mb-0 px-3 bg-bg-secondary border-b border-border rounded-t-[12px]"
+      className="flex items-center justify-between h-[40px] -m-3 mb-0 px-3 bg-accent border-b border-border rounded-t-[12px]"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
-      <span className="text-[11px] font-mono text-text-muted tracking-wider">fmwk-pwr</span>
+      <span className="text-[11px] font-mono text-accent-on tracking-wider">fmwk-pwr</span>
       <div className="flex" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
         <button
+          tabIndex={-1}
           onClick={() => window.fmwkPwr.windowMinimize()}
-          className="w-[32px] h-[32px] flex items-center justify-center bg-transparent border-none text-text-dim hover:text-text-primary hover:bg-bg-tertiary cursor-pointer text-[14px]"
+          className="w-[32px] h-[32px] flex items-center justify-center bg-transparent border-none text-accent-on hover:text-accent-on hover:bg-black/20 cursor-pointer text-[14px]"
         >&#x2013;</button>
         <button
+          tabIndex={-1}
           onClick={() => window.fmwkPwr.windowClose()}
-          className="w-[32px] h-[32px] flex items-center justify-center bg-transparent border-none text-text-dim hover:text-danger hover:bg-bg-tertiary cursor-pointer text-[14px]"
+          className="w-[32px] h-[32px] flex items-center justify-center bg-transparent border-none text-accent-on hover:text-accent-on hover:bg-black/20 cursor-pointer text-[14px]"
         >&#x2715;</button>
       </div>
     </div>
