@@ -4385,6 +4385,55 @@
                   ]
                 }
               ]
+            },
+            {
+              "type": "frame",
+              "id": "FwQR3",
+              "name": "Custom Preset Item",
+              "width": "fill_container",
+              "fill": "$bg-tertiary",
+              "cornerRadius": "$border-radius",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "layout": "vertical",
+              "gap": 4,
+              "padding": 12,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "yVpmG",
+                  "name": "Custom Name",
+                  "fill": "$text-primary",
+                  "content": "custom",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 12,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "m6KON",
+                  "name": "Custom Desc",
+                  "fill": "$text-muted",
+                  "content": "manually enter hardware limits for your system",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "text",
+                  "id": "Wbz71",
+                  "name": "Custom Limits",
+                  "fill": "$text-dim",
+                  "content": "for unsupported or unknown hardware",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 10,
+                  "fontWeight": "normal",
+                  "letterSpacing": 0.5
+                }
+              ]
             }
           ]
         },
@@ -18430,6 +18479,460 @@
       "fontFamily": "Space Grotesk",
       "fontSize": 24,
       "fontWeight": "normal"
+    },
+    {
+      "type": "frame",
+      "id": "4s69i",
+      "x": 1311,
+      "y": 1043,
+      "name": "Setup Modal — Custom Entry",
+      "theme": {
+        "Theme": "Default"
+      },
+      "width": 320,
+      "fill": "$bg-secondary",
+      "cornerRadius": "$border-radius",
+      "stroke": {
+        "align": "inside",
+        "thickness": 1,
+        "fill": "$border"
+      },
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 20,
+      "children": [
+        {
+          "type": "text",
+          "id": "3arHs",
+          "name": "Modal Title",
+          "fill": "$accent",
+          "content": "// hardware_setup > custom",
+          "fontFamily": "Space Grotesk",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "text",
+          "id": "b4oM3",
+          "name": "Modal Desc",
+          "fill": "$text-muted",
+          "textGrowth": "fixed-width",
+          "width": 279,
+          "content": "enter the hardware limits for your system. values are in milliwatts (mW) for power and megahertz (MHz) for clock speed.",
+          "lineHeight": 1.5,
+          "fontFamily": "Space Grotesk",
+          "fontSize": 12,
+          "fontWeight": "normal"
+        },
+        {
+          "type": "frame",
+          "id": "Z9Hqd",
+          "name": "Form Fields",
+          "width": "fill_container",
+          "layout": "vertical",
+          "gap": 12,
+          "children": [
+            {
+              "type": "text",
+              "id": "XuIqz",
+              "name": "Power Section Label",
+              "fill": "$text-muted",
+              "content": "// power_limits",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "v3kOz",
+              "name": "min_power Row",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "Bx6Jh",
+                  "name": "Label",
+                  "fill": "$text-dim",
+                  "content": "min_power (mW)",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "qzv7C",
+                  "name": "Input",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "drRqm",
+                      "name": "Value",
+                      "fill": "$text-primary",
+                      "content": "15000",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yckFq",
+              "name": "max_stapm Row",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "aRhv4",
+                  "name": "Label",
+                  "fill": "$text-dim",
+                  "content": "max_stapm (mW)",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "mgdCg",
+                  "name": "Input",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "UOEAJ",
+                      "name": "Value",
+                      "fill": "$text-primary",
+                      "content": "132000",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "S38hO",
+              "name": "max_slow_ppt Row",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "5HKmh",
+                  "name": "Label",
+                  "fill": "$text-dim",
+                  "content": "max_slow_ppt (mW)",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "IK9Eo",
+                  "name": "Input",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "3V12I",
+                      "name": "Value",
+                      "fill": "$text-primary",
+                      "content": "154000",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "FBtt6",
+              "name": "max_fast_ppt Row",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "xcGy4",
+                  "name": "Label",
+                  "fill": "$text-dim",
+                  "content": "max_fast_ppt (mW)",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "NalaP",
+                  "name": "Input",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "2d7XL",
+                      "name": "Value",
+                      "fill": "$text-primary",
+                      "content": "170000",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "rectangle",
+              "id": "kOPTk",
+              "name": "Divider",
+              "fill": "$border",
+              "width": "fill_container",
+              "height": 1
+            },
+            {
+              "type": "text",
+              "id": "DWYVH",
+              "name": "GPU Section Label",
+              "fill": "$text-muted",
+              "content": "// gpu_clock",
+              "fontFamily": "Space Grotesk",
+              "fontSize": 11,
+              "fontWeight": "normal"
+            },
+            {
+              "type": "frame",
+              "id": "2v1HT",
+              "name": "min_gpu_clock Row",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "fwUFd",
+                  "name": "Label",
+                  "fill": "$text-dim",
+                  "content": "min_gpu_clock (MHz)",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "EU1VR",
+                  "name": "Input",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "ltStx",
+                      "name": "Value",
+                      "fill": "$text-primary",
+                      "content": "200",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "yfsVF",
+              "name": "max_gpu_clock Row",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "text",
+                  "id": "joN6r",
+                  "name": "Label",
+                  "fill": "$text-dim",
+                  "content": "max_gpu_clock (MHz)",
+                  "fontFamily": "IBM Plex Mono",
+                  "fontSize": 11,
+                  "fontWeight": "normal"
+                },
+                {
+                  "type": "frame",
+                  "id": "9clVd",
+                  "name": "Input",
+                  "width": "fill_container",
+                  "height": 36,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    10
+                  ],
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "z2lc7",
+                      "name": "Value",
+                      "fill": "$text-primary",
+                      "content": "3000",
+                      "fontFamily": "IBM Plex Mono",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "frame",
+          "id": "zzlDT",
+          "name": "Button Row",
+          "width": "fill_container",
+          "gap": 8,
+          "alignItems": "center",
+          "children": [
+            {
+              "type": "frame",
+              "id": "pSyGo",
+              "name": "Back Button",
+              "height": 40,
+              "fill": "transparent",
+              "cornerRadius": "$border-radius",
+              "stroke": {
+                "align": "inside",
+                "thickness": 1,
+                "fill": "$border"
+              },
+              "padding": [
+                0,
+                16
+              ],
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "1HNGQ",
+                  "name": "Back Text",
+                  "fill": "$text-muted",
+                  "content": "back",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                }
+              ]
+            },
+            {
+              "type": "frame",
+              "id": "kYjoS",
+              "name": "Confirm Button",
+              "width": "fill_container",
+              "height": 40,
+              "fill": "$accent",
+              "cornerRadius": "$border-radius",
+              "justifyContent": "center",
+              "alignItems": "center",
+              "children": [
+                {
+                  "type": "text",
+                  "id": "cqJqB",
+                  "name": "Confirm Text",
+                  "fill": "$accent-on",
+                  "content": "confirm",
+                  "fontFamily": "Space Grotesk",
+                  "fontSize": 12,
+                  "fontWeight": "700"
+                }
+              ]
+            }
+          ]
+        }
+      ]
     }
   ],
   "themes": {
