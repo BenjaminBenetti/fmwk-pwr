@@ -8,6 +8,12 @@
 @font-face { font-family: 'Inter'; font-weight: 400; font-style: normal; font-display: swap; src: url('./fonts/inter-400.woff2') format('woff2'); }
 @font-face { font-family: 'Inter'; font-weight: 500; font-style: normal; font-display: swap; src: url('./fonts/inter-500.woff2') format('woff2'); }
 @font-face { font-family: 'Sora'; font-weight: 400; font-style: normal; font-display: swap; src: url('./fonts/sora-400.woff2') format('woff2'); }
+@font-face { font-family: 'Fira Code'; font-weight: 400; font-style: normal; font-display: swap; src: url('./fonts/fira-code-400.woff2') format('woff2'); }
+@font-face { font-family: 'Fira Code'; font-weight: 500; font-style: normal; font-display: swap; src: url('./fonts/fira-code-500.woff2') format('woff2'); }
+@font-face { font-family: 'Exo 2'; font-weight: 400; font-style: normal; font-display: swap; src: url('./fonts/exo-2-400.woff2') format('woff2'); }
+@font-face { font-family: 'Exo 2'; font-weight: 500; font-style: normal; font-display: swap; src: url('./fonts/exo-2-500.woff2') format('woff2'); }
+@font-face { font-family: 'Source Code Pro'; font-weight: 400; font-style: normal; font-display: swap; src: url('./fonts/source-code-pro-400.woff2') format('woff2'); }
+@font-face { font-family: 'Source Code Pro'; font-weight: 500; font-style: normal; font-display: swap; src: url('./fonts/source-code-pro-500.woff2') format('woff2'); }
 
 @tailwind base;
 @tailwind components;
@@ -96,6 +102,195 @@
   --text-muted: #5A5551;
   --text-primary: #3D3835;
   --warning: #D97706;
+}
+
+/* Theme: Nord Aurora */
+[data-theme="nord-aurora"] {
+  --accent: #88C0D0;
+  --accent-on: #2E3440;
+  --bg-primary: #2E3440;
+  --bg-secondary: #3B4252;
+  --bg-tertiary: #434C5E;
+  --border: #4C566A;
+  --border-radius: 4px;
+  --danger: #BF616A;
+  --font: 'Fira Code';
+  --font-mono: 'Fira Code';
+  --slider-thumb: #ECEFF4;
+  --slider-track: #434C5E;
+  --slider-gradient: linear-gradient(to right, #88C0D040, #EBCB8B30 60%, #BF616A30);
+  --text-dim: #616E88;
+  --text-muted: #7B88A1;
+  --text-primary: #ECEFF4;
+  --warning: #EBCB8B;
+}
+
+/* Theme: Neon Flux */
+[data-theme="neon-flux"] {
+  --accent: #00E5FF;
+  --accent-on: #050510;
+  --bg-primary: #050510;
+  --bg-secondary: #0A0A1F;
+  --bg-tertiary: #12122E;
+  --border: #1A1A3E;
+  --border-radius: 0px;
+  --danger: #FF0055;
+  --font: 'Exo 2';
+  --font-mono: 'Fira Code';
+  --slider-thumb: #E0E0FF;
+  --slider-track: #12122E;
+  --slider-gradient: linear-gradient(to right, #00E5FF40, #FFE50030 60%, #FF005530);
+  --text-dim: #4A4A70;
+  --text-muted: #7070A0;
+  --text-primary: #E0E0FF;
+  --warning: #FFE500;
+}
+
+/* Theme: Catppuccin Mocha */
+[data-theme="catppuccin-mocha"] {
+  --accent: #CBA6F7;
+  --accent-on: #1E1E2E;
+  --bg-primary: #1E1E2E;
+  --bg-secondary: #313244;
+  --bg-tertiary: #45475A;
+  --border: #585B70;
+  --border-radius: 8px;
+  --danger: #F38BA8;
+  --font: 'Inter';
+  --font-mono: 'JetBrains Mono';
+  --slider-thumb: #CDD6F4;
+  --slider-track: #45475A;
+  --slider-gradient: linear-gradient(to right, #CBA6F740, #F9E2AF30 60%, #F38BA830);
+  --text-dim: #6C7086;
+  --text-muted: #A6ADC8;
+  --text-primary: #CDD6F4;
+  --warning: #F9E2AF;
+}
+
+/* Theme: Tokyo Night */
+[data-theme="tokyo-night"] {
+  --accent: #7AA2F7;
+  --accent-on: #1A1B26;
+  --bg-primary: #1A1B26;
+  --bg-secondary: #24283B;
+  --bg-tertiary: #292E42;
+  --border: #3B4261;
+  --border-radius: 6px;
+  --danger: #F7768E;
+  --font: 'Inter';
+  --font-mono: 'JetBrains Mono';
+  --slider-thumb: #C0CAF5;
+  --slider-track: #292E42;
+  --slider-gradient: linear-gradient(to right, #7AA2F740, #E0AF6830 60%, #F7768E30);
+  --text-dim: #565F89;
+  --text-muted: #9AA5CE;
+  --text-primary: #C0CAF5;
+  --warning: #E0AF68;
+}
+
+/* Theme: Nord Snow */
+[data-theme="nord-snow"] {
+  --accent: #5E81AC;
+  --accent-on: #ECEFF4;
+  --bg-primary: #ECEFF4;
+  --bg-secondary: #E5E9F0;
+  --bg-tertiary: #D8DEE9;
+  --border: #C0C8D4;
+  --border-radius: 4px;
+  --danger: #BF616A;
+  --font: 'Fira Code';
+  --font-mono: 'Fira Code';
+  --slider-thumb: #2E3440;
+  --slider-track: #D8DEE9;
+  --slider-gradient: linear-gradient(to right, #5E81AC40, #EBCB8B30 60%, #BF616A30);
+  --text-dim: #7B88A1;
+  --text-muted: #4C566A;
+  --text-primary: #2E3440;
+  --warning: #EBCB8B;
+}
+
+/* Theme: Catppuccin Latte */
+[data-theme="catppuccin-latte"] {
+  --accent: #8839EF;
+  --accent-on: #EFF1F5;
+  --bg-primary: #EFF1F5;
+  --bg-secondary: #E6E9EF;
+  --bg-tertiary: #DCE0E8;
+  --border: #BCC0CC;
+  --border-radius: 8px;
+  --danger: #D20F39;
+  --font: 'Inter';
+  --font-mono: 'JetBrains Mono';
+  --slider-thumb: #4C4F69;
+  --slider-track: #DCE0E8;
+  --slider-gradient: linear-gradient(to right, #8839EF40, #DF8E1D30 60%, #D20F3930);
+  --text-dim: #9CA0B0;
+  --text-muted: #6C6F85;
+  --text-primary: #4C4F69;
+  --warning: #DF8E1D;
+}
+
+/* Theme: Solarized Light */
+[data-theme="solarized-light"] {
+  --accent: #2AA198;
+  --accent-on: #FDF6E3;
+  --bg-primary: #FDF6E3;
+  --bg-secondary: #EEE8D5;
+  --bg-tertiary: #E0DAC7;
+  --border: #D3CCBA;
+  --border-radius: 4px;
+  --danger: #DC322F;
+  --font: 'Source Code Pro';
+  --font-mono: 'Source Code Pro';
+  --slider-thumb: #586E75;
+  --slider-track: #EEE8D5;
+  --slider-gradient: linear-gradient(to right, #2AA19840, #B5890030 60%, #DC322F30);
+  --text-dim: #93A1A1;
+  --text-muted: #839496;
+  --text-primary: #657B83;
+  --warning: #B58900;
+}
+
+/* Theme: Paper */
+[data-theme="paper"] {
+  --accent: #2563EB;
+  --accent-on: #FFFFFF;
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F8FAFC;
+  --bg-tertiary: #F1F5F9;
+  --border: #E2E8F0;
+  --border-radius: 6px;
+  --danger: #DC2626;
+  --font: 'Inter';
+  --font-mono: 'JetBrains Mono';
+  --slider-thumb: #0F172A;
+  --slider-track: #F1F5F9;
+  --slider-gradient: linear-gradient(to right, #2563EB40, #D9770630 60%, #DC262630);
+  --text-dim: #94A3B8;
+  --text-muted: #64748B;
+  --text-primary: #0F172A;
+  --warning: #D97706;
+}
+
+/* Theme: Monokai */
+[data-theme="monokai"] {
+  --accent: #FFE761;
+  --accent-on: #272822;
+  --bg-primary: #272822;
+  --bg-secondary: #2D2E27;
+  --bg-tertiary: #3E3D32;
+  --border: #49483E;
+  --border-radius: 0px;
+  --danger: #FF4444;
+  --font: 'Source Code Pro';
+  --font-mono: 'Source Code Pro';
+  --slider-thumb: #F8F8F2;
+  --slider-track: #3E3D32;
+  --slider-gradient: linear-gradient(to right, #FFE76140, #FD971F30 60%, #FF444430);
+  --text-dim: #75715E;
+  --text-muted: #A6A28C;
+  --text-primary: #F8F8F2;
+  --warning: #FD971F;
 }
 
 /* Rounded window — html/body must be transparent for window transparency */

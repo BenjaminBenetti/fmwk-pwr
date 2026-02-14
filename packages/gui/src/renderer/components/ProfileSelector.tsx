@@ -7,6 +7,15 @@ const THEME_LABELS: Record<string, string> = {
   industrial: 'Industrial',
   swiss: 'Swiss',
   'warm-retro': 'Warm Retro',
+  'nord-aurora': 'Nord Aurora',
+  'neon-flux': 'Neon Flux',
+  'catppuccin-mocha': 'Catppuccin Mocha',
+  'tokyo-night': 'Tokyo Night',
+  'nord-snow': 'Nord Snow',
+  'catppuccin-latte': 'Catppuccin Latte',
+  'solarized-light': 'Solarized Light',
+  paper: 'Paper',
+  monokai: 'Monokai',
 };
 
 const THEME_OPTIONS = Object.entries(THEME_LABELS).map(([key, label]) => ({ value: key, label }));
