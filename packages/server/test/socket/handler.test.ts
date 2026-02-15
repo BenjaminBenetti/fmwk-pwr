@@ -12,6 +12,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
     name: "test-profile",
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+    cpu: { maxClockMhz: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -23,6 +24,7 @@ const mockHwInfo: HardwareInfo = {
   stapmLimit: 65000,
   slowLimit: 75000,
   fastLimit: 85000,
+  cpuClockMhz: null,
   gpuClockMhz: null,
   gpuClockLimitMhz: null,
   tcpuTemp: 45,
@@ -42,9 +44,12 @@ function createMockHardware(): HardwareStrategy {
       maxFastMw: 170_000,
       minGpuClockMhz: 200,
       maxGpuClockMhz: 3_000,
+      minCpuClockMhz: 400,
+      maxCpuClockMhz: 5_500,
     },
     setHardwareLimits() {},
     applyPowerLimits() {},
+    async applyCpuMaxClock() {},
     async applyGpuClock() {},
     async applyGpuPerfLevel() {},
     async applyTunedProfile() {},
@@ -78,6 +83,8 @@ function createState(): ServerState {
         maxFastMw: 170_000,
         minGpuClockMhz: 200,
         maxGpuClockMhz: 3_000,
+        minCpuClockMhz: 400,
+        maxCpuClockMhz: 5_500,
       },
       user: { theme: "default" },
     },
@@ -440,6 +447,8 @@ describe("message handler", () => {
           maxFastMw: 170_000,
           minGpuClockMhz: 200,
           maxGpuClockMhz: 3_000,
+          minCpuClockMhz: 400,
+          maxCpuClockMhz: 5_500,
         },
       };
       writeFileSync(join(presetsDir, "framework-desktop.json"), JSON.stringify(preset));
@@ -463,6 +472,8 @@ describe("message handler", () => {
         maxFastMw: 140_000,
         minGpuClockMhz: 100,
         maxGpuClockMhz: 2_500,
+        minCpuClockMhz: 400,
+        maxCpuClockMhz: 5_500,
       },
     };
 

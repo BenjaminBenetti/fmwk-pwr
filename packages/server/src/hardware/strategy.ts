@@ -32,6 +32,13 @@ export interface HardwareStrategy {
   ): void;
 
   /**
+   * Set the maximum CPU clock frequency via cpufreq.
+   * Pass null to skip (no change).
+   * @param maxClockMhz - Maximum CPU clock in MHz
+   */
+  applyCpuMaxClock(maxClockMhz: number | null): Promise<void>;
+
+  /**
    * Set the GPU clock frequency. Implies "manual" performance level.
    * Pass null to skip (no change).
    * @param clockMhz - Target GPU clock frequency in MHz

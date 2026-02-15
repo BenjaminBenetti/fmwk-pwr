@@ -11,12 +11,15 @@ const defaultLimits: HardwareLimits = {
   maxFastMw: 170_000,
   minGpuClockMhz: 200,
   maxGpuClockMhz: 3_000,
+  minCpuClockMhz: 400,
+  maxCpuClockMhz: 5_500,
 };
 
 function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
     name: "test",
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+    cpu: { maxClockMhz: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -27,7 +30,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
 // Replicate StrixHaloStrategy.validateProfile for testing
 function validateStrixHaloProfile(profile: Profile, limits: HardwareLimits): string[] {
   const errors: string[] = [];
-  const { power, gpu, match } = profile;
+  const { power, cpu, gpu, match } = profile;
 
   if (power.stapmLimit !== null) {
     if (power.stapmLimit < limits.minPowerMw || power.stapmLimit > limits.maxStapmMw) {
@@ -42,6 +45,11 @@ function validateStrixHaloProfile(profile: Profile, limits: HardwareLimits): str
   if (power.fastLimit !== null) {
     if (power.fastLimit < limits.minPowerMw || power.fastLimit > limits.maxFastMw) {
       errors.push(`Fast PPT limit must be between ${limits.minPowerMw} and ${limits.maxFastMw} mW`);
+    }
+  }
+  if (cpu.maxClockMhz !== null) {
+    if (cpu.maxClockMhz < limits.minCpuClockMhz || cpu.maxClockMhz > limits.maxCpuClockMhz) {
+      errors.push(`CPU clock must be between ${limits.minCpuClockMhz} and ${limits.maxCpuClockMhz} MHz`);
     }
   }
   if (gpu.clockMhz !== null) {

@@ -102,9 +102,10 @@ export function handlePresetLoad(
     return errorResponse(id, ErrorCode.InvalidParams, `Preset "${name}" not found`);
   }
 
-  state.config.hardwareLimits = foundPreset.hardwareLimits;
+  const mergedLimits = { ...state.config.hardwareLimits, ...foundPreset.hardwareLimits };
+  state.config.hardwareLimits = mergedLimits;
   state.config.firstTimeSetup = false;
-  hardware.setHardwareLimits(foundPreset.hardwareLimits);
+  hardware.setHardwareLimits(mergedLimits);
 
   saveConfig(state.configPath, state.config);
 

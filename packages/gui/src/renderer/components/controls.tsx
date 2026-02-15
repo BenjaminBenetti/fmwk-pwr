@@ -33,8 +33,8 @@ export function CustomSlider({ value, min, max, step, disabled, onChange }: {
   const trackRef = useRef<HTMLDivElement>(null);
 
   const clampToStep = useCallback((raw: number) => {
-    const clamped = Math.max(min, Math.min(max, raw));
-    return Math.round(clamped / step) * step;
+    const stepped = Math.round(raw / step) * step;
+    return Math.max(min, Math.min(max, stepped));
   }, [min, max, step]);
 
   const fraction = (value - min) / (max - min);

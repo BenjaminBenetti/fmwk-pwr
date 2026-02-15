@@ -36,6 +36,7 @@ describe("shared type exports", () => {
     const profile: Profile = {
       name: "test",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+      cpu: { maxClockMhz: null },
       gpu: { clockMhz: null, perfLevel: null },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -49,6 +50,7 @@ describe("shared type exports", () => {
       name: "test",
       description: "A test profile",
       power: { stapmLimit: 100000, slowLimit: 120000, fastLimit: 150000 },
+      cpu: { maxClockMhz: null },
       gpu: { clockMhz: 2500, perfLevel: null },
       tunedProfile: "balanced",
       match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: null },
@@ -72,6 +74,8 @@ describe("shared type exports", () => {
         maxFastMw: 180000,
         minGpuClockMhz: 200,
         maxGpuClockMhz: 3000,
+        minCpuClockMhz: 400,
+        maxCpuClockMhz: 5_500,
       },
       user: {
         theme: "default",
@@ -89,6 +93,7 @@ describe("shared type exports", () => {
       stapmLimit: 65000,
       slowLimit: 75000,
       fastLimit: 85000,
+      cpuClockMhz: null,
       gpuClockMhz: null,
       gpuClockLimitMhz: null,
       tcpuTemp: null,
@@ -157,6 +162,7 @@ describe("shared type exports", () => {
       profile: {
         name: "test",
         power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+        cpu: { maxClockMhz: null },
         gpu: { clockMhz: null, perfLevel: null },
         tunedProfile: null,
         match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -165,6 +171,7 @@ describe("shared type exports", () => {
         stapmLimit: 65000,
         slowLimit: 75000,
         fastLimit: 85000,
+        cpuClockMhz: null,
         gpuClockMhz: null,
         gpuClockLimitMhz: null,
         tcpuTemp: null,
@@ -191,6 +198,7 @@ describe("shared type exports", () => {
     const profile1: Profile = {
       name: "a",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+      cpu: { maxClockMhz: null },
       gpu: { clockMhz: null, perfLevel: "auto" },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -198,6 +206,7 @@ describe("shared type exports", () => {
     const profile2: Profile = {
       name: "b",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+      cpu: { maxClockMhz: null },
       gpu: { clockMhz: null, perfLevel: "high" },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -205,6 +214,7 @@ describe("shared type exports", () => {
     const profile3: Profile = {
       name: "c",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+      cpu: { maxClockMhz: null },
       gpu: { clockMhz: null, perfLevel: null },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },

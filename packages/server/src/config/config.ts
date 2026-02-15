@@ -25,6 +25,8 @@ const DEFAULT_CONFIG: ServerConfig = {
     maxFastMw: 170_000,
     minGpuClockMhz: 200,
     maxGpuClockMhz: 3_000,
+    minCpuClockMhz: 400,
+    maxCpuClockMhz: 5_500,
   },
   user: { ...DEFAULT_USER },
 };
@@ -153,7 +155,7 @@ function validateConfig(raw: unknown): ServerConfig {
         throw new Error(`hardwareLimits.${field} must be a positive number`);
       }
     }
-    config.hardwareLimits = hl as unknown as HardwareLimits;
+    config.hardwareLimits = { ...DEFAULT_CONFIG.hardwareLimits, ...hl } as unknown as HardwareLimits;
   }
 
   if ("user" in obj) {

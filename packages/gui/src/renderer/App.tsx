@@ -2,8 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useProfiles, useStatus, useConfig, useConnection } from './hooks/useServer';
 import { ProfileSelector } from './components/ProfileSelector';
 import { PowerControls } from './components/PowerControls';
+import { CpuControls } from './components/CpuControls';
 import { GpuControls } from './components/GpuControls';
-import { SystemProfile } from './components/SystemProfile';
 import { SensorReadout } from './components/SensorReadout';
 import { AutoMatch } from './components/AutoMatch';
 import { SetupModal } from './components/SetupModal';
@@ -14,6 +14,7 @@ import type { Profile } from './types';
 const DEFAULT_PROFILE: Profile = {
   name: 'new-profile',
   power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+  cpu: { maxClockMhz: null },
   gpu: { clockMhz: null, perfLevel: null },
   tunedProfile: null,
   match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -184,7 +185,7 @@ export function App() {
         lastHeight.current = height;
         window.fmwkPwr.windowSetSize(380, height);
       }
-    }, 25);
+    }, 100);
     return () => clearTimeout(tid);
   });
 
@@ -250,17 +251,21 @@ export function App() {
           />
 
           <Divider />
+          <CpuControls
+            cpu={editProfile.cpu}
+            tunedProfile={editProfile.tunedProfile}
+            hardwareLimits={hardwareLimits}
+            hwInfo={hwInfo}
+            onChange={(cpu) => setEditProfile({ ...editProfile, cpu })}
+            onTunedProfileChange={(tunedProfile) => setEditProfile({ ...editProfile, tunedProfile })}
+          />
+
+          <Divider />
           <GpuControls
             gpu={editProfile.gpu}
             hardwareLimits={hardwareLimits}
             hwInfo={hwInfo}
             onChange={(gpu) => setEditProfile({ ...editProfile, gpu })}
-          />
-
-          <Divider />
-          <SystemProfile
-            tunedProfile={editProfile.tunedProfile}
-            onChange={(tunedProfile) => setEditProfile({ ...editProfile, tunedProfile })}
           />
 
           <Divider />

@@ -9,6 +9,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
     name: "test-profile",
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+    cpu: { maxClockMhz: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -20,6 +21,7 @@ const mockHwInfo: HardwareInfo = {
   stapmLimit: 65000,
   slowLimit: 75000,
   fastLimit: 85000,
+  cpuClockMhz: null,
   gpuClockMhz: null,
   gpuClockLimitMhz: null,
   tcpuTemp: 45,
@@ -39,8 +41,11 @@ function createMockHardware(): HardwareStrategy {
       maxFastMw: 140000,
       minGpuClockMhz: 200,
       maxGpuClockMhz: 3000,
+      minCpuClockMhz: 400,
+      maxCpuClockMhz: 5_500,
     },
     applyPowerLimits() {},
+    async applyCpuMaxClock() {},
     async applyGpuClock() {},
     async applyGpuPerfLevel() {},
     async applyTunedProfile() {},
@@ -424,8 +429,13 @@ describe("profile validation", () => {
     await expect(manager.create(bad)).rejects.toThrow("power must be an object");
   });
 
+  test("rejects profile with missing cpu object", async () => {
+    const bad = { name: "x", power: { stapmLimit: null, slowLimit: null, fastLimit: null }, gpu: { clockMhz: null, perfLevel: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
+    await expect(manager.create(bad)).rejects.toThrow("cpu must be an object");
+  });
+
   test("rejects profile with missing gpu object", async () => {
-    const bad = { name: "x", power: { stapmLimit: null, slowLimit: null, fastLimit: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
+    const bad = { name: "x", power: { stapmLimit: null, slowLimit: null, fastLimit: null }, cpu: { maxClockMhz: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
     await expect(manager.create(bad)).rejects.toThrow("gpu must be an object");
   });
 

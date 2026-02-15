@@ -3,6 +3,7 @@ import type { HardwareStrategy } from "../../strategy.js";
 import { RyzenAdj } from "./ryzenadj.js";
 import { HwmonReader } from "./hwmon.js";
 import { GpuController } from "./gpu.js";
+import { CpuController } from "./cpu.js";
 
 // =====================================
 // Lifecycle
@@ -24,6 +25,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
   private readonly ryzenAdj: RyzenAdj;
   private readonly hwmon: HwmonReader;
   private readonly gpu: GpuController;
+  private readonly cpu: CpuController;
 
   /**
    * Initialize all hardware subsystems.
@@ -40,6 +42,13 @@ export class StrixHaloStrategy implements HardwareStrategy {
       throw new Error("No AMD GPU found in /sys/class/drm");
     }
     this.gpu = new GpuController(gpuPath);
+    this.cpu = new CpuController();
+
+    // Auto-detect CPU clock limits from sysfs
+    const maxCpu = this.cpu.readHardwareMaxClock();
+    if (maxCpu !== null) this.hardwareLimits.maxCpuClockMhz = maxCpu;
+    const minCpu = this.cpu.readHardwareMinClock();
+    if (minCpu !== null) this.hardwareLimits.minCpuClockMhz = minCpu;
   }
 
   // =====================================
@@ -61,6 +70,19 @@ export class StrixHaloStrategy implements HardwareStrategy {
     if (stapm !== null) this.ryzenAdj.setStapmLimit(stapm);
     if (slow !== null) this.ryzenAdj.setSlowLimit(slow);
     if (fast !== null) this.ryzenAdj.setFastLimit(fast);
+  }
+
+  // =====================================
+  // CPU Control
+  // =====================================
+
+  /**
+   * Set the maximum CPU clock frequency via cpufreq.
+   * @param maxClockMhz - Maximum CPU clock in MHz, or null to skip
+   */
+  async applyCpuMaxClock(maxClockMhz: number | null): Promise<void> {
+    if (maxClockMhz === null) return;
+    await this.cpu.setMaxClock(maxClockMhz);
   }
 
   // =====================================
@@ -125,13 +147,14 @@ export class StrixHaloStrategy implements HardwareStrategy {
    * @returns Current hardware state including power limits, sensors, and tuned profile
    */
   async readHardwareInfo(): Promise<HardwareInfo> {
-    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, tunedProfile] =
+    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, tunedProfile, cpuClockMhz] =
       await Promise.all([
         this.hwmon.readCpuTemp(),
         this.hwmon.readSocketPower(),
         this.gpu.readCurrentClock(),
         this.gpu.readClockLimit(),
         this.readTunedProfile(),
+        this.hwmon.readCpuClock(),
       ]);
 
     const limits = this.ryzenAdj.getLimits();
@@ -140,6 +163,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
       stapmLimit: limits.stapm,
       slowLimit: limits.slow,
       fastLimit: limits.fast,
+      cpuClockMhz,
       gpuClockMhz,
       gpuClockLimitMhz,
       tcpuTemp,
@@ -162,7 +186,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
    */
   validateProfile(profile: Profile): string[] {
     const errors: string[] = [];
-    const { power, gpu, match } = profile;
+    const { power, cpu, gpu, match } = profile;
 
     if (power.stapmLimit !== null) {
       if (power.stapmLimit < this.hardwareLimits.minPowerMw || power.stapmLimit > this.hardwareLimits.maxStapmMw) {
@@ -177,6 +201,11 @@ export class StrixHaloStrategy implements HardwareStrategy {
     if (power.fastLimit !== null) {
       if (power.fastLimit < this.hardwareLimits.minPowerMw || power.fastLimit > this.hardwareLimits.maxFastMw) {
         errors.push(`Fast PPT limit must be between ${this.hardwareLimits.minPowerMw} and ${this.hardwareLimits.maxFastMw} mW`);
+      }
+    }
+    if (cpu.maxClockMhz !== null) {
+      if (cpu.maxClockMhz < this.hardwareLimits.minCpuClockMhz || cpu.maxClockMhz > this.hardwareLimits.maxCpuClockMhz) {
+        errors.push(`CPU clock must be between ${this.hardwareLimits.minCpuClockMhz} and ${this.hardwareLimits.maxCpuClockMhz} MHz`);
       }
     }
     if (gpu.clockMhz !== null) {
@@ -206,6 +235,12 @@ export class StrixHaloStrategy implements HardwareStrategy {
    */
   setHardwareLimits(limits: HardwareLimits): void {
     this.hardwareLimits = limits;
+
+    // Re-apply auto-detected CPU clock limits
+    const maxCpu = this.cpu.readHardwareMaxClock();
+    if (maxCpu !== null) this.hardwareLimits.maxCpuClockMhz = maxCpu;
+    const minCpu = this.cpu.readHardwareMinClock();
+    if (minCpu !== null) this.hardwareLimits.minCpuClockMhz = minCpu;
   }
 
   // =====================================

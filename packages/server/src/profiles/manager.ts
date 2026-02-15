@@ -208,6 +208,8 @@ export class ProfileManager {
       profile.power.fastLimit,
     );
 
+    await this.hardware.applyCpuMaxClock(profile.cpu.maxClockMhz);
+
     if (profile.gpu.clockMhz !== null) {
       await this.hardware.applyGpuClock(profile.gpu.clockMhz);
     } else {
@@ -276,6 +278,13 @@ function validateProfile(raw: unknown): Profile {
   validateNullableNumber(power.slowLimit, "power.slowLimit");
   validateNullableNumber(power.fastLimit, "power.fastLimit");
 
+  // Validate cpu
+  if (typeof obj.cpu !== "object" || obj.cpu === null) {
+    throw new Error("cpu must be an object");
+  }
+  const cpu = obj.cpu as Record<string, unknown>;
+  validateNullableNumber(cpu.maxClockMhz, "cpu.maxClockMhz");
+
   // Validate gpu
   if (typeof obj.gpu !== "object" || obj.gpu === null) {
     throw new Error("gpu must be an object");
@@ -330,6 +339,9 @@ function validateProfile(raw: unknown): Profile {
       stapmLimit: power.stapmLimit as number | null,
       slowLimit: power.slowLimit as number | null,
       fastLimit: power.fastLimit as number | null,
+    },
+    cpu: {
+      maxClockMhz: cpu.maxClockMhz as number | null,
     },
     gpu: {
       clockMhz: gpu.clockMhz as number | null,

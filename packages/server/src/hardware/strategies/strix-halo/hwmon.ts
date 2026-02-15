@@ -4,6 +4,7 @@ import { join } from "node:path";
 const HWMON_BASE = "/sys/class/hwmon";
 const DRM_BASE = "/sys/class/drm";
 const AMD_VENDOR_ID = "0x1002";
+const CPUFREQ_BASE = "/sys/devices/system/cpu";
 
 // =====================================
 // Path Detection
@@ -143,6 +144,21 @@ export class HwmonReader {
     try {
       const raw = await Bun.file(join(this.gpuCardPath, "pp_dpm_sclk")).text();
       return parseActiveClock(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Read the current CPU clock frequency from cpufreq.
+   * @returns Current CPU clock in MHz, or null if unavailable
+   */
+  async readCpuClock(): Promise<number | null> {
+    try {
+      const raw = await Bun.file(join(CPUFREQ_BASE, "cpu0", "cpufreq", "scaling_cur_freq")).text();
+      const khz = parseInt(raw.trim(), 10);
+      if (isNaN(khz)) return null;
+      return Math.round(khz / 1000);
     } catch {
       return null;
     }

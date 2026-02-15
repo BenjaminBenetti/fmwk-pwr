@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import type { Preset } from '@fmwk-pwr/shared';
+import type { Preset, HardwareLimits } from '@fmwk-pwr/shared';
 
 interface SetupModalProps {
   onComplete: () => void;
@@ -102,7 +102,7 @@ export function SetupModal({ onComplete }: SetupModalProps) {
     setConfirming(true);
     try {
       await window.fmwkPwr.updateConfig({
-        hardwareLimits: parsed,
+        hardwareLimits: parsed as HardwareLimits,
         firstTimeSetup: false,
       });
       onComplete();

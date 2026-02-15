@@ -10,6 +10,8 @@ export interface HardwareInfo {
   slowLimit: number;
   /** Current fast (PPT fast) power limit in mW, read via libryzenadj. */
   fastLimit: number;
+  /** Current CPU clock frequency in MHz from cpufreq, or null if unavailable. */
+  cpuClockMhz: number | null;
   /** Current GPU clock frequency in MHz from HWMON, or null if unavailable. */
   gpuClockMhz: number | null;
   /** Configured max GPU clock limit in MHz from pp_od_clk_voltage, or null if unavailable. */

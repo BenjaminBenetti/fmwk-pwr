@@ -16,4 +16,8 @@ export interface HardwareLimits {
   minGpuClockMhz: number;
   /** Upper bound for GPU clock (MHz). */
   maxGpuClockMhz: number;
+  /** Lower bound for CPU clock (MHz). */
+  minCpuClockMhz: number;
+  /** Upper bound for CPU clock (MHz). */
+  maxCpuClockMhz: number;
 }

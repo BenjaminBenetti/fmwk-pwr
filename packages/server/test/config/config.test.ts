@@ -61,6 +61,10 @@ describe("config loader", () => {
     expect(config.hardwareLimits.minGpuClockMhz).toBeGreaterThan(0);
     expect(typeof config.hardwareLimits.maxGpuClockMhz).toBe("number");
     expect(config.hardwareLimits.maxGpuClockMhz).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.minCpuClockMhz).toBe("number");
+    expect(config.hardwareLimits.minCpuClockMhz).toBeGreaterThan(0);
+    expect(typeof config.hardwareLimits.maxCpuClockMhz).toBe("number");
+    expect(config.hardwareLimits.maxCpuClockMhz).toBeGreaterThan(0);
   });
 
   test("loadConfig returns config with firstTimeSetup", () => {

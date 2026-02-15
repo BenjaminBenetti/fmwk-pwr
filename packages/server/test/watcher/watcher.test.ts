@@ -11,6 +11,7 @@ import { ProcessWatcher } from "../../src/watcher/watcher.js";
 function makeProfile(overrides: Partial<Profile> & { name: string }): Profile {
   return {
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
+    cpu: { maxClockMhz: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: true, processPatterns: [], priority: 0, revertProfile: null },
@@ -22,6 +23,7 @@ const dummyHwInfo: HardwareInfo = {
   stapmLimit: 25000,
   slowLimit: 25000,
   fastLimit: 35000,
+  cpuClockMhz: null,
   gpuClockMhz: null,
   gpuClockLimitMhz: null,
   tcpuTemp: null,
@@ -58,6 +60,8 @@ function createState(activeProfile = "default"): ServerState {
         maxFastMw: 120000,
         minGpuClockMhz: 200,
         maxGpuClockMhz: 3000,
+        minCpuClockMhz: 400,
+        maxCpuClockMhz: 5_500,
       },
       user: { theme: "default" },
     },

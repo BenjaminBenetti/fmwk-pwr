@@ -88,8 +88,9 @@ export function handleConfigUpdate(
     state.config.user = { ...state.config.user, ...config.user };
   }
   if (config.hardwareLimits !== undefined) {
-    state.config.hardwareLimits = config.hardwareLimits;
-    hardware.setHardwareLimits(config.hardwareLimits);
+    const mergedLimits = { ...state.config.hardwareLimits, ...config.hardwareLimits };
+    state.config.hardwareLimits = mergedLimits;
+    hardware.setHardwareLimits(mergedLimits);
   }
   if (config.firstTimeSetup !== undefined) {
     state.config.firstTimeSetup = config.firstTimeSetup;

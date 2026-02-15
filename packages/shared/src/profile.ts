@@ -17,6 +17,11 @@ export interface Profile {
     /** Fast (PPT fast) power limit in mW, or null to leave unchanged. */
     fastLimit: number | null;
   };
+  /** CPU configuration applied via cpufreq sysfs. */
+  cpu: {
+    /** Maximum CPU clock frequency in MHz, or null to leave unmanaged. */
+    maxClockMhz: number | null;
+  };
   /** GPU configuration applied via amdgpu sysfs. */
   gpu: {
     /** Fixed GPU clock frequency in MHz, or null to leave unmanaged. Setting this implies manual performance level. */
