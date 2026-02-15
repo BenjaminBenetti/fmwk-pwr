@@ -61,7 +61,7 @@ export function createHandler(
       case Methods.ConfigGet:
         return handleConfigGet(id, state);
       case Methods.ConfigUpdate:
-        return handleConfigUpdate(id, params, state);
+        return handleConfigUpdate(id, params, state, hardware);
       case Methods.PresetList:
         return handlePresetList(id, presetsDir);
       case Methods.PresetLoad:

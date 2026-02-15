@@ -14331,6 +14331,87 @@
             },
             {
               "type": "frame",
+              "id": "q2mRC",
+              "name": "Revert Profile Field",
+              "width": "fill_container",
+              "layout": "vertical",
+              "gap": 4,
+              "children": [
+                {
+                  "type": "frame",
+                  "id": "EoZkK",
+                  "name": "Revert Label Row",
+                  "gap": 6,
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "HGYSV",
+                      "name": "revertLabel",
+                      "fill": "$text-primary",
+                      "content": "revert_profile",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "icon_font",
+                      "id": "Rx3RW",
+                      "name": "infoIcon",
+                      "width": 14,
+                      "height": 14,
+                      "iconFontName": "info",
+                      "iconFontFamily": "lucide",
+                      "fill": "$text-dim"
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
+                  "id": "D88oo",
+                  "name": "Revert Dropdown",
+                  "width": "fill_container",
+                  "height": 40,
+                  "fill": "transparent",
+                  "cornerRadius": "$border-radius",
+                  "stroke": {
+                    "align": "inside",
+                    "thickness": 1,
+                    "fill": "$border"
+                  },
+                  "padding": [
+                    0,
+                    12
+                  ],
+                  "justifyContent": "space_between",
+                  "alignItems": "center",
+                  "children": [
+                    {
+                      "type": "text",
+                      "id": "NfYEr",
+                      "name": "revertText",
+                      "fill": "$text-primary",
+                      "content": "default",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    },
+                    {
+                      "type": "text",
+                      "id": "FCZEj",
+                      "name": "revertChevron",
+                      "fill": "$text-muted",
+                      "content": "v",
+                      "fontFamily": "Space Grotesk",
+                      "fontSize": 12,
+                      "fontWeight": "normal"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "frame",
               "id": "zG3iA",
               "name": "Priority Field",
               "width": "fill_container",
@@ -18139,6 +18220,87 @@
                 },
                 {
                   "type": "frame",
+                  "id": "BVyOB",
+                  "name": "Revert Profile Field",
+                  "width": "fill_container",
+                  "layout": "vertical",
+                  "gap": 4,
+                  "children": [
+                    {
+                      "type": "frame",
+                      "id": "DqL7Z",
+                      "name": "Revert Label Row",
+                      "gap": 6,
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "lGnxp",
+                          "name": "revertLabel",
+                          "fill": "$text-primary",
+                          "content": "revert_profile",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "icon_font",
+                          "id": "Sz7gy",
+                          "name": "infoIcon",
+                          "width": 14,
+                          "height": 14,
+                          "iconFontName": "info",
+                          "iconFontFamily": "lucide",
+                          "fill": "$text-dim"
+                        }
+                      ]
+                    },
+                    {
+                      "type": "frame",
+                      "id": "dwjH0",
+                      "name": "Revert Dropdown",
+                      "width": "fill_container",
+                      "height": 40,
+                      "fill": "transparent",
+                      "cornerRadius": "$border-radius",
+                      "stroke": {
+                        "align": "inside",
+                        "thickness": 1,
+                        "fill": "$border"
+                      },
+                      "padding": [
+                        0,
+                        12
+                      ],
+                      "justifyContent": "space_between",
+                      "alignItems": "center",
+                      "children": [
+                        {
+                          "type": "text",
+                          "id": "0rYlK",
+                          "name": "revertText",
+                          "fill": "$text-primary",
+                          "content": "default",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        },
+                        {
+                          "type": "text",
+                          "id": "NMBPy",
+                          "name": "revertChevron",
+                          "fill": "$text-muted",
+                          "content": "v",
+                          "fontFamily": "Space Grotesk",
+                          "fontSize": 12,
+                          "fontWeight": "normal"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "frame",
                   "id": "wtiPw",
                   "name": "Priority Field",
                   "width": "fill_container",
@@ -18483,8 +18645,8 @@
     {
       "type": "frame",
       "id": "4s69i",
-      "x": 1311,
-      "y": 1043,
+      "x": 1376,
+      "y": 892,
       "name": "Setup Modal — Custom Entry",
       "theme": {
         "Theme": "Default"

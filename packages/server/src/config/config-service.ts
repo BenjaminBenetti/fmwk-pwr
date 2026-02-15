@@ -3,8 +3,10 @@ import {
   type Response,
   type ErrorResponse,
   type ConfigUpdateParams,
+  type HardwareLimits,
 } from "@fmwk-pwr/shared";
 import type { ServerState } from "../state.js";
+import type { HardwareStrategy } from "../hardware/strategy.js";
 import { saveConfig } from "./config.js";
 
 // =====================================
@@ -45,7 +47,12 @@ export function handleConfigGet(id: string, state: ServerState): Response {
  * @param params - Raw request params (expects { config: Partial<ServerConfig> })
  * @param state - Server state (config is updated in place)
  */
-export function handleConfigUpdate(id: string, params: unknown, state: ServerState): Response | ErrorResponse {
+export function handleConfigUpdate(
+  id: string,
+  params: unknown,
+  state: ServerState,
+  hardware: HardwareStrategy,
+): Response | ErrorResponse {
   const { config } = params as ConfigUpdateParams;
   if (!config) {
     return errorResponse(id, ErrorCode.InvalidParams, "config is required");
@@ -55,6 +62,12 @@ export function handleConfigUpdate(id: string, params: unknown, state: ServerSta
   }
   if (config.defaultProfile !== undefined && config.defaultProfile === "") {
     return errorResponse(id, ErrorCode.InvalidParams, "defaultProfile must be a non-empty string");
+  }
+  if (config.hardwareLimits !== undefined) {
+    const limitsError = validateHardwareLimits(config.hardwareLimits);
+    if (limitsError) {
+      return errorResponse(id, ErrorCode.InvalidParams, limitsError);
+    }
   }
   if (config.gpuSysfsPath !== undefined) {
     state.config.gpuSysfsPath = config.gpuSysfsPath;
@@ -74,6 +87,34 @@ export function handleConfigUpdate(id: string, params: unknown, state: ServerSta
     }
     state.config.user = { ...state.config.user, ...config.user };
   }
+  if (config.hardwareLimits !== undefined) {
+    state.config.hardwareLimits = config.hardwareLimits;
+    hardware.setHardwareLimits(config.hardwareLimits);
+  }
+  if (config.firstTimeSetup !== undefined) {
+    state.config.firstTimeSetup = config.firstTimeSetup;
+  }
   saveConfig(state.configPath, state.config);
   return { id, result: { config: state.config } };
+}
+
+/**
+ * Validates that all hardware limits fields are positive numbers.
+ * @returns An error message string if invalid, or null if valid.
+ */
+function validateHardwareLimits(limits: HardwareLimits): string | null {
+  const fields: (keyof HardwareLimits)[] = [
+    "minPowerMw",
+    "maxStapmMw",
+    "maxSlowMw",
+    "maxFastMw",
+    "minGpuClockMhz",
+    "maxGpuClockMhz",
+  ];
+  for (const field of fields) {
+    if (typeof limits[field] !== "number" || limits[field] <= 0) {
+      return `hardwareLimits.${field} must be a positive number`;
+    }
+  }
+  return null;
 }

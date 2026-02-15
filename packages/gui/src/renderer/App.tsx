@@ -53,10 +53,16 @@ export function App() {
   const connectionState = useConnection();
 
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
-  const [originalProfile, setOriginalProfile] = useState<Profile | null>(null);
   const [applying, setApplying] = useState(false);
   const [showNewProfile, setShowNewProfile] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+
+  // Tracks the profile state currently applied to hardware (for Apply button)
+  const appliedSnapshot = useRef<Profile | null>(null);
+  // Tracks what's already saved to server (to skip redundant auto-saves)
+  const lastSavedJson = useRef<string>('');
+  // Debounce timer for auto-save
+  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Apply theme to document
   useEffect(() => {
@@ -72,21 +78,44 @@ export function App() {
     prevActiveProfile.current = activeProfile;
     const target = profiles.find((p) => p.name === activeProfile);
     if (target) {
-      setEditProfile(structuredClone(target));
-      setOriginalProfile(structuredClone(target));
+      const clone = structuredClone(target);
+      setEditProfile(clone);
+      appliedSnapshot.current = structuredClone(clone);
+      lastSavedJson.current = JSON.stringify(clone);
     }
   }, [activeProfile, profiles]);
 
-  const isDirty = editProfile !== null && originalProfile !== null &&
-    JSON.stringify(editProfile) !== JSON.stringify(originalProfile);
-  const isNotActive = editProfile !== null && editProfile.name !== activeProfile;
-  const needsApply = isDirty || isNotActive;
+  // Auto-save on change (debounced)
+  useEffect(() => {
+    if (!editProfile) return;
+    const json = JSON.stringify(editProfile);
+    if (json === lastSavedJson.current) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        await window.fmwkPwr.updateProfile(editProfile.name, editProfile);
+        lastSavedJson.current = json;
+        await refetchProfiles();
+      } catch (e) { console.error('Auto-save failed:', e); }
+    }, 500);
+    saveTimerRef.current = timer;
+
+    return () => clearTimeout(timer);
+  }, [editProfile, refetchProfiles]);
+
+  const needsApply = (() => {
+    if (!editProfile) return false;
+    if (editProfile.name !== activeProfile) return true;
+    if (!appliedSnapshot.current) return true;
+    return JSON.stringify(editProfile) !== JSON.stringify(appliedSnapshot.current);
+  })();
 
   const handleSelectProfile = useCallback(async (name: string) => {
     const target = profiles.find((p) => p.name === name);
     if (target) {
-      setEditProfile(structuredClone(target));
-      setOriginalProfile(structuredClone(target));
+      const clone = structuredClone(target);
+      setEditProfile(clone);
+      lastSavedJson.current = JSON.stringify(clone);
     }
   }, [profiles]);
 
@@ -100,8 +129,9 @@ export function App() {
       const base = source ? structuredClone(source) : { ...DEFAULT_PROFILE };
       const { profile } = await window.fmwkPwr.createProfile({ ...base, name });
       await refetchProfiles();
-      setEditProfile(structuredClone(profile));
-      setOriginalProfile(structuredClone(profile));
+      const clone = structuredClone(profile);
+      setEditProfile(clone);
+      lastSavedJson.current = JSON.stringify(clone);
       setShowNewProfile(false);
     } catch (e) { console.error('Failed to create profile:', e); }
   }, [profiles, refetchProfiles]);
@@ -119,8 +149,9 @@ export function App() {
       // If we deleted the profile we were editing, switch to another one
       if (editProfile?.name === deleteTarget && updated.length > 0) {
         const next = updated.find((p) => p.name === activeProfile) ?? updated[0];
-        setEditProfile(structuredClone(next));
-        setOriginalProfile(structuredClone(next));
+        const clone = structuredClone(next);
+        setEditProfile(clone);
+        lastSavedJson.current = JSON.stringify(clone);
       }
     } catch (e) { console.error('Failed to delete profile:', e); }
     finally { setDeleteTarget(null); }
@@ -130,9 +161,12 @@ export function App() {
     if (!editProfile) return;
     setApplying(true);
     try {
+      // Cancel pending auto-save and flush latest state before applying
+      clearTimeout(saveTimerRef.current);
       await window.fmwkPwr.updateProfile(editProfile.name, editProfile);
+      lastSavedJson.current = JSON.stringify(editProfile);
       await window.fmwkPwr.applyProfile(editProfile.name);
-      setOriginalProfile(structuredClone(editProfile));
+      appliedSnapshot.current = structuredClone(editProfile);
       await refetchProfiles();
     } catch (e) { console.error('Failed to apply:', e); }
     finally { setApplying(false); }
