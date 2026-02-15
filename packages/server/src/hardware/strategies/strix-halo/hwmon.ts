@@ -165,6 +165,49 @@ export class HwmonReader {
   }
 
   /**
+   * Read GPU and CPU power from the gpu_metrics binary file (v3.0 format).
+   * This file is exposed by the amdgpu driver at /sys/class/drm/cardN/device/gpu_metrics.
+   * @returns Object with gpuPower and cpuPower in mW, or nulls if unavailable
+   */
+  async readGpuMetricsPower(): Promise<{ gpuPower: number | null; cpuPower: number | null }> {
+    if (!this.gpuCardPath) return { gpuPower: null, cpuPower: null };
+    try {
+      const buf = await Bun.file(join(this.gpuCardPath, "gpu_metrics")).arrayBuffer();
+      const bytes = new DataView(buf);
+
+      // Minimum size: need at least through average_gfx_power at offset 124 + 4 = 128 bytes
+      if (buf.byteLength < 128) return { gpuPower: null, cpuPower: null };
+
+      // Header check: byte 2 = format_revision must be 3 (v3.x series).
+      // Content revision (byte 3) is not checked — v3.x revisions only append
+      // new fields at the end, so offsets we read are stable across v3.0, v3.1, etc.
+      const formatRevision = bytes.getUint8(2);
+      if (formatRevision !== 3) {
+        return { gpuPower: null, cpuPower: null };
+      }
+
+      // gpu_metrics_v3_0 with natural C alignment (not packed):
+      // average_apu_power: uint32_t at byte offset 120 (total APU power, in mW)
+      // average_gfx_power: uint32_t at byte offset 124 (GPU power, in mW)
+      // CPU power = apu_power - gfx_power (same approach as MangoHud).
+      // average_all_core_power (offset 132) only covers CPU cores and misses
+      // SoC/uncore/memory controller power, so we don't use it.
+      const apuPower = bytes.getUint32(120, true);
+      const gfxPower = bytes.getUint32(124, true);
+
+      const gpuPower = gfxPower === 0xFFFFFFFF ? null : gfxPower;
+      const cpuPower =
+        apuPower === 0xFFFFFFFF || gfxPower === 0xFFFFFFFF
+          ? null
+          : Math.max(0, apuPower - gfxPower);
+
+      return { gpuPower, cpuPower };
+    } catch {
+      return { gpuPower: null, cpuPower: null };
+    }
+  }
+
+  /**
    * Get the discovered GPU card sysfs device path.
    * @returns Absolute path to the GPU device directory (e.g. /sys/class/drm/card0/device),
    *          or null if no AMD GPU was found

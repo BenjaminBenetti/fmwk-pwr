@@ -147,7 +147,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
    * @returns Current hardware state including power limits, sensors, and tuned profile
    */
   async readHardwareInfo(): Promise<HardwareInfo> {
-    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, tunedProfile, cpuClockMhz] =
+    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, tunedProfile, cpuClockMhz, metricsPower] =
       await Promise.all([
         this.hwmon.readCpuTemp(),
         this.hwmon.readSocketPower(),
@@ -155,6 +155,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
         this.gpu.readClockLimit(),
         this.readTunedProfile(),
         this.hwmon.readCpuClock(),
+        this.hwmon.readGpuMetricsPower(),
       ]);
 
     const limits = this.ryzenAdj.getLimits();
@@ -167,8 +168,8 @@ export class StrixHaloStrategy implements HardwareStrategy {
       gpuClockMhz,
       gpuClockLimitMhz,
       tcpuTemp,
-      cpuPower: null,
-      gpuPower: null,
+      cpuPower: metricsPower.cpuPower,
+      gpuPower: metricsPower.gpuPower,
       socketPower,
       tunedProfile,
     };
