@@ -1,16 +1,20 @@
 import { useState, useRef } from 'react';
 import type { Profile } from '../types';
-import { Checkbox } from './controls';
+import { Checkbox, Dropdown } from './controls';
 
 interface AutoMatchProps {
   match: Profile['match'];
+  profiles: { name: string }[];
+  currentProfileName: string;
   onChange: (match: Profile['match']) => void;
 }
 
-export function AutoMatch({ match, onChange }: AutoMatchProps) {
+export function AutoMatch({ match, profiles, currentProfileName, onChange }: AutoMatchProps) {
   const [expanded, setExpanded] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [showRevertTooltip, setShowRevertTooltip] = useState(false);
   const infoRef = useRef<HTMLDivElement>(null);
+  const revertInfoRef = useRef<HTMLDivElement>(null);
 
   const pattern = match.processPatterns[0] ?? '';
 
@@ -61,6 +65,56 @@ export function AutoMatch({ match, onChange }: AutoMatchProps) {
             placeholder="regex pattern..."
             style={{ fontFamily: 'var(--font-mono)' }}
             className="w-full bg-transparent border border-border rounded-theme h-[40px] px-3 text-[12px] text-text-primary outline-none"
+          />
+        </div>
+
+        {/* Revert Profile */}
+        <div className="flex flex-col gap-1 mt-2">
+          <div className="flex items-center gap-1.5 relative">
+            <span className="text-[12px] text-text-primary font-sans">revert_profile</span>
+            <div
+              ref={revertInfoRef}
+              onMouseEnter={() => setShowRevertTooltip(true)}
+              onMouseLeave={() => setShowRevertTooltip(false)}
+              className="cursor-help"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={showRevertTooltip ? 'var(--accent)' : 'var(--text-dim)'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+            </div>
+            {showRevertTooltip && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: '100%',
+                  left: 0,
+                  marginBottom: 6,
+                  width: 260,
+                  background: 'var(--bg-secondary)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--border-radius)',
+                  padding: 10,
+                  zIndex: 50,
+                  boxShadow: '0 4px 16px #00000060',
+                }}
+              >
+                <span style={{ fontSize: 11, lineHeight: 1.5, color: 'var(--text-primary)', fontFamily: 'var(--font)' }}>
+                  When this profile's pattern stops matching any running process, automatically switch to the selected profile. Choose 'none' to stay on this profile.
+                </span>
+              </div>
+            )}
+          </div>
+          <Dropdown
+            options={[
+              { value: '__none__', label: 'none' },
+              ...profiles
+                .filter((p) => p.name !== currentProfileName)
+                .map((p) => ({ value: p.name, label: p.name })),
+            ]}
+            value={match.revertProfile ?? '__none__'}
+            onChange={(v) => onChange({ ...match, revertProfile: v === '__none__' ? null : v })}
           />
         </div>
 

@@ -29,6 +29,15 @@ interface CustomFormValues {
 }
 
 const DEFAULT_FORM: CustomFormValues = {
+  minPowerMw: '',
+  maxStapmMw: '',
+  maxSlowMw: '',
+  maxFastMw: '',
+  minGpuClockMhz: '',
+  maxGpuClockMhz: '',
+};
+
+const PLACEHOLDERS: Record<keyof CustomFormValues, string> = {
   minPowerMw: '15000',
   maxStapmMw: '132000',
   maxSlowMw: '154000',
@@ -216,6 +225,7 @@ export function SetupModal({ onComplete }: SetupModalProps) {
                 <input
                   type="number"
                   value={formValues[key]}
+                  placeholder={PLACEHOLDERS[key]}
                   onChange={(e) => updateField(key, e.target.value)}
                   style={inputStyle}
                 />
@@ -245,6 +255,7 @@ export function SetupModal({ onComplete }: SetupModalProps) {
                 <input
                   type="number"
                   value={formValues[key]}
+                  placeholder={PLACEHOLDERS[key]}
                   onChange={(e) => updateField(key, e.target.value)}
                   style={inputStyle}
                 />

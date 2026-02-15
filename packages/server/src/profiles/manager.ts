@@ -319,6 +319,9 @@ function validateProfile(raw: unknown): Profile {
   if (typeof match.priority !== "number") {
     throw new Error("match.priority must be a number");
   }
+  if (match.revertProfile !== null && typeof match.revertProfile !== "string") {
+    throw new Error("match.revertProfile must be a string or null");
+  }
 
   return {
     name: obj.name,
@@ -337,6 +340,7 @@ function validateProfile(raw: unknown): Profile {
       enabled: match.enabled as boolean,
       processPatterns: match.processPatterns as string[],
       priority: match.priority as number,
+      revertProfile: (match.revertProfile as string | null) ?? null,
     },
   };
 }

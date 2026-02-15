@@ -38,7 +38,7 @@ describe("shared type exports", () => {
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       gpu: { clockMhz: null, perfLevel: null },
       tunedProfile: null,
-      match: { enabled: false, processPatterns: [], priority: 0 },
+      match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
     expect(profile.name).toBe("test");
     expect(profile.description).toBeUndefined();
@@ -51,7 +51,7 @@ describe("shared type exports", () => {
       power: { stapmLimit: 100000, slowLimit: 120000, fastLimit: 150000 },
       gpu: { clockMhz: 2500, perfLevel: null },
       tunedProfile: "balanced",
-      match: { enabled: true, processPatterns: ["steam"], priority: 10 },
+      match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: null },
     };
     expect(profile.description).toBe("A test profile");
     expect(profile.power.stapmLimit).toBe(100000);
@@ -159,7 +159,7 @@ describe("shared type exports", () => {
         power: { stapmLimit: null, slowLimit: null, fastLimit: null },
         gpu: { clockMhz: null, perfLevel: null },
         tunedProfile: null,
-        match: { enabled: false, processPatterns: [], priority: 0 },
+        match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
       },
       hwInfo: {
         stapmLimit: 65000,
@@ -193,21 +193,21 @@ describe("shared type exports", () => {
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       gpu: { clockMhz: null, perfLevel: "auto" },
       tunedProfile: null,
-      match: { enabled: false, processPatterns: [], priority: 0 },
+      match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
     const profile2: Profile = {
       name: "b",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       gpu: { clockMhz: null, perfLevel: "high" },
       tunedProfile: null,
-      match: { enabled: false, processPatterns: [], priority: 0 },
+      match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
     const profile3: Profile = {
       name: "c",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       gpu: { clockMhz: null, perfLevel: null },
       tunedProfile: null,
-      match: { enabled: false, processPatterns: [], priority: 0 },
+      match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
     expect(profile1.gpu.perfLevel).toBe("auto");
     expect(profile2.gpu.perfLevel).toBe("high");

@@ -34,7 +34,7 @@ export interface Profile {
   };
   gpu: { clockMhz: number | null; perfLevel: 'auto' | 'high' | null };
   tunedProfile: string | null;
-  match: { enabled: boolean; processPatterns: string[]; priority: number };
+  match: { enabled: boolean; processPatterns: string[]; priority: number; revertProfile: string | null };
 }
 
 interface PendingRequest {

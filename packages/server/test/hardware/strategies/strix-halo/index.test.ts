@@ -19,7 +19,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
-    match: { enabled: false, processPatterns: [], priority: 0 },
+    match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     ...overrides,
   };
 }
@@ -235,6 +235,7 @@ describe("Strix Halo profile validation", () => {
             enabled: true,
             processPatterns: ["steam.*game", "gamescope", "^/usr/bin/.*"],
             priority: 10,
+            revertProfile: null,
           },
         }),
         defaultLimits,
@@ -249,6 +250,7 @@ describe("Strix Halo profile validation", () => {
             enabled: true,
             processPatterns: ["[invalid"],
             priority: 10,
+            revertProfile: null,
           },
         }),
         defaultLimits,
@@ -260,7 +262,7 @@ describe("Strix Halo profile validation", () => {
     test("empty patterns array is valid", () => {
       const errors = validateStrixHaloProfile(
         makeProfile({
-          match: { enabled: true, processPatterns: [], priority: 0 },
+          match: { enabled: true, processPatterns: [], priority: 0, revertProfile: null },
         }),
         defaultLimits,
       );
@@ -278,6 +280,7 @@ describe("Strix Halo profile validation", () => {
             enabled: true,
             processPatterns: ["steam", "lutris"],
             priority: 5,
+            revertProfile: null,
           },
         }),
         defaultLimits,
@@ -294,6 +297,7 @@ describe("Strix Halo profile validation", () => {
             enabled: true,
             processPatterns: ["[bad"],
             priority: 0,
+            revertProfile: null,
           },
         }),
         defaultLimits,

@@ -21,6 +21,8 @@ export class ProcessWatcher {
   private candidate: string | null = null;
   /** How many consecutive scans the candidate has been matched. */
   private candidateCount = 0;
+  /** How many consecutive scans with no match (for revert debounce). */
+  private revertCount = 0;
 
   constructor(opts: {
     profileManager: ProfileManager;
@@ -79,11 +81,32 @@ export class ProcessWatcher {
       const match = this.matcher.findMatch(processes);
 
       if (match === null) {
-        // No match — keep current profile, reset debounce
+        // No match — reset forward debounce
         this.candidate = null;
         this.candidateCount = 0;
+
+        // Revert logic: only when the current profile was auto-activated
+        if (this.state.activatedBy === "auto") {
+          const current = this.profileManager.get(this.state.activeProfile);
+          const revertProfile = current?.match.revertProfile;
+          if (revertProfile && revertProfile !== this.state.activeProfile) {
+            this.revertCount++;
+            if (this.revertCount >= this.debounceThreshold) {
+              const { hwInfo } = await this.profileManager.apply(revertProfile);
+              this.state.activeProfile = revertProfile;
+              this.state.activatedBy = "auto";
+              this.state.lastHwInfo = hwInfo;
+              this.state.lastHwInfoTime = Date.now();
+              this.revertCount = 0;
+              console.log(`[watcher] Reverting to profile: ${revertProfile}`);
+            }
+          }
+        }
         return;
       }
+
+      // Match found — reset revert debounce
+      this.revertCount = 0;
 
       // Track consecutive matches for debounce
       if (match === this.candidate) {

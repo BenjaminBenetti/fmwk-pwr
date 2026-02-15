@@ -13,7 +13,7 @@ function makeProfile(overrides: Partial<Profile> & { name: string }): Profile {
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
-    match: { enabled: true, processPatterns: [], priority: 0 },
+    match: { enabled: true, processPatterns: [], priority: 0, revertProfile: null },
     ...overrides,
   };
 }
@@ -34,6 +34,7 @@ const dummyHwInfo: HardwareInfo = {
 function createMockProfileManager(profiles: Profile[]): ProfileManager {
   return {
     list: () => profiles,
+    get: (name: string) => profiles.find((p) => p.name === name),
     apply: mock(async () => ({ profile: profiles[0]!, hwInfo: dummyHwInfo })),
   } as unknown as ProfileManager;
 }
@@ -90,11 +91,11 @@ describe("ProcessWatcher", () => {
     profiles = [
       makeProfile({
         name: "gaming",
-        match: { enabled: true, processPatterns: ["steam"], priority: 10 },
+        match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: null },
       }),
       makeProfile({
         name: "balanced",
-        match: { enabled: true, processPatterns: ["firefox"], priority: 1 },
+        match: { enabled: true, processPatterns: ["firefox"], priority: 1, revertProfile: null },
       }),
     ];
     pm = createMockProfileManager(profiles);
@@ -228,7 +229,7 @@ describe("ProcessWatcher", () => {
     profiles.push(
       makeProfile({
         name: "rendering",
-        match: { enabled: true, processPatterns: ["blender"], priority: 5 },
+        match: { enabled: true, processPatterns: ["blender"], priority: 5, revertProfile: null },
       }),
     );
 
@@ -249,5 +250,153 @@ describe("ProcessWatcher", () => {
     watcher.stop();
     // If it didn't clamp, the interval would be 50ms — the clamp warning
     // in the log output confirms it was raised to 500
+  });
+
+  // =====================================
+  // Revert profile tests
+  // =====================================
+
+  it("reverts to revertProfile when auto-matched process disappears", async () => {
+    profiles = [
+      makeProfile({
+        name: "gaming",
+        match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: "default" },
+      }),
+      makeProfile({ name: "default" }),
+    ];
+    pm = createMockProfileManager(profiles);
+    const watcher = createWatcher();
+
+    // Auto-switch to gaming
+    scanResult = ["steam"];
+    await watcher.tick();
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+    expect(state.activatedBy).toBe("auto");
+
+    // Process disappears — tick enough times to meet debounce
+    scanResult = [];
+    await watcher.tick(); // revertCount = 1
+    await watcher.tick(); // revertCount = 2 >= threshold, reverts
+    expect(state.activeProfile).toBe("default");
+    expect(pm.apply).toHaveBeenCalledWith("default");
+  });
+
+  it("stays on profile when revertProfile is null", async () => {
+    profiles = [
+      makeProfile({
+        name: "gaming",
+        match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: null },
+      }),
+    ];
+    pm = createMockProfileManager(profiles);
+    const watcher = createWatcher();
+
+    // Auto-switch to gaming
+    scanResult = ["steam"];
+    await watcher.tick();
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+
+    // Process disappears — should stay on gaming since revertProfile is null
+    scanResult = [];
+    await watcher.tick();
+    await watcher.tick();
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+  });
+
+  it("does not revert when profile was manually applied", async () => {
+    profiles = [
+      makeProfile({
+        name: "gaming",
+        match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: "default" },
+      }),
+      makeProfile({ name: "default" }),
+    ];
+    pm = createMockProfileManager(profiles);
+    const watcher = createWatcher();
+
+    // Manually set to gaming (not auto)
+    state.activeProfile = "gaming";
+    state.activatedBy = "manual";
+
+    // No processes match
+    scanResult = [];
+    await watcher.tick();
+    await watcher.tick();
+    await watcher.tick();
+
+    // Should NOT revert because activatedBy is "manual"
+    expect(state.activeProfile).toBe("gaming");
+  });
+
+  it("revert respects debounce threshold", async () => {
+    profiles = [
+      makeProfile({
+        name: "gaming",
+        match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: "default" },
+      }),
+      makeProfile({ name: "default" }),
+    ];
+    pm = createMockProfileManager(profiles);
+    const watcher = createWatcher();
+
+    // Auto-switch to gaming
+    scanResult = ["steam"];
+    await watcher.tick();
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+
+    // Clear apply mock call count
+    (pm.apply as ReturnType<typeof mock>).mockClear();
+
+    // Process disappears — first tick should NOT revert (debounce)
+    scanResult = [];
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+    expect(pm.apply).not.toHaveBeenCalled();
+
+    // Second tick — meets debounce, should revert
+    await watcher.tick();
+    expect(state.activeProfile).toBe("default");
+    expect(pm.apply).toHaveBeenCalledWith("default");
+  });
+
+  it("revert cancelled if process reappears before debounce", async () => {
+    profiles = [
+      makeProfile({
+        name: "gaming",
+        match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: "default" },
+      }),
+      makeProfile({ name: "default" }),
+    ];
+    pm = createMockProfileManager(profiles);
+    const watcher = createWatcher();
+
+    // Auto-switch to gaming
+    scanResult = ["steam"];
+    await watcher.tick();
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+
+    // Clear apply mock call count
+    (pm.apply as ReturnType<typeof mock>).mockClear();
+
+    // Process disappears — one tick of revert debounce
+    scanResult = [];
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+
+    // Process reappears — should cancel revert debounce
+    scanResult = ["steam"];
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+
+    // Process disappears again — needs full debounce again
+    scanResult = [];
+    await watcher.tick();
+    expect(state.activeProfile).toBe("gaming");
+    expect(pm.apply).not.toHaveBeenCalled();
   });
 });

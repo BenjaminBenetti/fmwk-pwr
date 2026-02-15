@@ -7,7 +7,7 @@ function makeProfile(overrides: Partial<Profile> & { name: string }): Profile {
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
     gpu: { clockMhz: null, perfLevel: null },
     tunedProfile: null,
-    match: { enabled: true, processPatterns: [], priority: 0 },
+    match: { enabled: true, processPatterns: [], priority: 0, revertProfile: null },
     ...overrides,
   };
 }
@@ -23,7 +23,7 @@ describe("PatternMatcher", () => {
     it("returns matching profile name", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "gaming", match: { enabled: true, processPatterns: ["steam"], priority: 0 } }),
+        makeProfile({ name: "gaming", match: { enabled: true, processPatterns: ["steam"], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["steam game.exe"])).toBe("gaming");
     });
@@ -31,7 +31,7 @@ describe("PatternMatcher", () => {
     it("returns null when no pattern matches", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "gaming", match: { enabled: true, processPatterns: ["steam"], priority: 0 } }),
+        makeProfile({ name: "gaming", match: { enabled: true, processPatterns: ["steam"], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["/usr/bin/firefox"])).toBeNull();
     });
@@ -39,8 +39,8 @@ describe("PatternMatcher", () => {
     it("returns higher priority profile when multiple match", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "low", match: { enabled: true, processPatterns: ["game"], priority: 1 } }),
-        makeProfile({ name: "high", match: { enabled: true, processPatterns: ["game"], priority: 10 } }),
+        makeProfile({ name: "low", match: { enabled: true, processPatterns: ["game"], priority: 1, revertProfile: null } }),
+        makeProfile({ name: "high", match: { enabled: true, processPatterns: ["game"], priority: 10, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["game.exe"])).toBe("high");
     });
@@ -48,7 +48,7 @@ describe("PatternMatcher", () => {
     it("matches case-insensitively", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "gaming", match: { enabled: true, processPatterns: ["Steam"], priority: 0 } }),
+        makeProfile({ name: "gaming", match: { enabled: true, processPatterns: ["Steam"], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["STEAM"])).toBe("gaming");
       expect(matcher.findMatch(["steam"])).toBe("gaming");
@@ -58,7 +58,7 @@ describe("PatternMatcher", () => {
     it("skips disabled profiles", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "disabled", match: { enabled: false, processPatterns: ["steam"], priority: 0 } }),
+        makeProfile({ name: "disabled", match: { enabled: false, processPatterns: ["steam"], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["steam"])).toBeNull();
     });
@@ -66,7 +66,7 @@ describe("PatternMatcher", () => {
     it("skips profiles with empty processPatterns", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "empty", match: { enabled: true, processPatterns: [], priority: 0 } }),
+        makeProfile({ name: "empty", match: { enabled: true, processPatterns: [], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["anything"])).toBeNull();
     });
@@ -76,7 +76,7 @@ describe("PatternMatcher", () => {
       matcher.updateProfiles([
         makeProfile({
           name: "gaming",
-          match: { enabled: true, processPatterns: ["steam", "lutris", "heroic"], priority: 0 },
+          match: { enabled: true, processPatterns: ["steam", "lutris", "heroic"], priority: 0, revertProfile: null },
         }),
       ]);
       expect(matcher.findMatch(["lutris --no-gui"])).toBe("gaming");
@@ -85,8 +85,8 @@ describe("PatternMatcher", () => {
     it("breaks priority ties alphabetically by name", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "zebra", match: { enabled: true, processPatterns: ["app"], priority: 5 } }),
-        makeProfile({ name: "alpha", match: { enabled: true, processPatterns: ["app"], priority: 5 } }),
+        makeProfile({ name: "zebra", match: { enabled: true, processPatterns: ["app"], priority: 5, revertProfile: null } }),
+        makeProfile({ name: "alpha", match: { enabled: true, processPatterns: ["app"], priority: 5, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["app"])).toBe("alpha");
     });
@@ -96,7 +96,7 @@ describe("PatternMatcher", () => {
       matcher.updateProfiles([
         makeProfile({
           name: "gaming",
-          match: { enabled: true, processPatterns: ["^/opt/games/.*\\.exe$"], priority: 0 },
+          match: { enabled: true, processPatterns: ["^/opt/games/.*\\.exe$"], priority: 0, revertProfile: null },
         }),
       ]);
       expect(matcher.findMatch(["/opt/games/doom.exe"])).toBe("gaming");
@@ -108,12 +108,12 @@ describe("PatternMatcher", () => {
     it("replaces previous state when called again", () => {
       const matcher = new PatternMatcher();
       matcher.updateProfiles([
-        makeProfile({ name: "first", match: { enabled: true, processPatterns: ["first-app"], priority: 0 } }),
+        makeProfile({ name: "first", match: { enabled: true, processPatterns: ["first-app"], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["first-app"])).toBe("first");
 
       matcher.updateProfiles([
-        makeProfile({ name: "second", match: { enabled: true, processPatterns: ["second-app"], priority: 0 } }),
+        makeProfile({ name: "second", match: { enabled: true, processPatterns: ["second-app"], priority: 0, revertProfile: null } }),
       ]);
       expect(matcher.findMatch(["first-app"])).toBeNull();
       expect(matcher.findMatch(["second-app"])).toBe("second");
@@ -124,7 +124,7 @@ describe("PatternMatcher", () => {
       matcher.updateProfiles([
         makeProfile({
           name: "bad-regex",
-          match: { enabled: true, processPatterns: ["[invalid", "valid-pattern"], priority: 0 },
+          match: { enabled: true, processPatterns: ["[invalid", "valid-pattern"], priority: 0, revertProfile: null },
         }),
       ]);
       // Should still match on the valid pattern

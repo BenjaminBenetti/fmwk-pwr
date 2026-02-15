@@ -66,43 +66,52 @@ export function CustomSlider({ value, min, max, step, disabled, onChange }: {
 
   return (
     <div
-      ref={trackRef}
       onMouseDown={handleMouseDown}
       style={{
         position: 'relative',
         width: '100%',
-        height: 6,
-        background: 'var(--slider-track)',
+        padding: '5px 8px',
+        boxSizing: 'border-box',
         cursor: disabled ? 'default' : 'pointer',
         opacity: disabled ? 0.3 : 1,
       }}
     >
-      {/* Fill bar */}
       <div
+        ref={trackRef}
         style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          width: `${fraction * 100}%`,
+          position: 'relative',
+          width: '100%',
           height: 6,
-          background: 'var(--slider-gradient)',
-          pointerEvents: 'none',
+          background: 'var(--slider-track)',
         }}
-      />
-      {/* Thumb */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -5,
-          left: `${fraction * 100}%`,
-          width: 16,
-          height: 16,
-          borderRadius: '50%',
-          background: 'var(--slider-thumb)',
-          transform: 'translateX(-50%)',
-          pointerEvents: 'none',
-        }}
-      />
+      >
+        {/* Fill bar */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: `${fraction * 100}%`,
+            height: 6,
+            background: 'var(--slider-gradient)',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Thumb */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -5,
+            left: `${fraction * 100}%`,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            background: 'var(--slider-thumb)',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
     </div>
   );
 }

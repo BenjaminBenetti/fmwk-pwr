@@ -34,5 +34,7 @@ export interface Profile {
     processPatterns: string[];
     /** Higher values take precedence when multiple profiles match. */
     priority: number;
+    /** Profile to revert to when the auto-match pattern stops matching, or null to stay on current profile. */
+    revertProfile: string | null;
   };
 }
