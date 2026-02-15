@@ -69,13 +69,13 @@
 
 1. RPM spec / COPR build
 2. Desktop entry + icon for GUI
-3. First-run setup wizard (detect hardware, create default profiles)
 4. Error handling hardening
 5. Documentation
 
 ## Non-Goals (for now)
-- Windows support
+- Windows support (If someone else adds this I guess... but Windows is kinda crap)
 - Non-AMD hardware
+- CPU frequency control
 - Per-core CPU frequency control
 - Fan control (handled by EC firmware)
 - Undervolting (risky, out of scope)

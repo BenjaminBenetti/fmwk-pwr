@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { HardwareInfo } from '../types';
 
 interface SensorReadoutProps {
@@ -25,25 +26,40 @@ function SensorRow({ label, value, isNull }: SensorRowProps) {
 }
 
 export function SensorReadout({ hwInfo }: SensorReadoutProps) {
-  if (!hwInfo) {
+  const [expanded, setExpanded] = useState(false);
+
+  if (!expanded) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <span style={{ fontSize: 12, fontFamily: 'var(--font)', color: 'var(--text-muted)' }}>// sensors</span>
-        <span style={{ fontSize: 13, fontFamily: 'var(--font)', color: 'var(--text-dim)' }}>no data</span>
+      <div
+        className="flex items-center justify-between cursor-pointer"
+        onClick={() => setExpanded(true)}
+      >
+        <span className="text-[12px] text-text-muted font-sans">// sensors</span>
+        <span className="text-[14px] text-text-dim font-sans">&gt;</span>
       </div>
     );
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <span style={{ fontSize: 12, fontFamily: 'var(--font)', color: 'var(--text-muted)' }}>// sensors</span>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-        <SensorRow label="socket" value={`${formatPower(hwInfo.socketPower)} w`} isNull={hwInfo.socketPower === null} />
-        <SensorRow label="cpu" value={`${formatPower(hwInfo.cpuPower)} w`} isNull={hwInfo.cpuPower === null} />
-        <SensorRow label="gpu" value={`${formatPower(hwInfo.gpuPower)} w`} isNull={hwInfo.gpuPower === null} />
-        <SensorRow label="apu_temp" value={hwInfo.tcpuTemp !== null ? `${hwInfo.tcpuTemp.toFixed(0)}\u00B0c` : '\u2014'} isNull={hwInfo.tcpuTemp === null} />
-        <SensorRow label="gpu_clock" value={hwInfo.gpuClockMhz !== null ? `${hwInfo.gpuClockMhz} mhz` : '\u2014'} isNull={hwInfo.gpuClockMhz === null} />
+      <div className="flex items-center justify-between">
+        <span className="text-[12px] text-text-muted font-sans">// sensors</span>
+        <span
+          className="text-[12px] text-text-dim font-sans cursor-pointer"
+          onClick={() => setExpanded(false)}
+        >v</span>
       </div>
+      {!hwInfo ? (
+        <span style={{ fontSize: 13, fontFamily: 'var(--font)', color: 'var(--text-dim)' }}>no data</span>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <SensorRow label="socket" value={`${formatPower(hwInfo.socketPower)} w`} isNull={hwInfo.socketPower === null} />
+          <SensorRow label="cpu" value={`${formatPower(hwInfo.cpuPower)} w`} isNull={hwInfo.cpuPower === null} />
+          <SensorRow label="gpu" value={`${formatPower(hwInfo.gpuPower)} w`} isNull={hwInfo.gpuPower === null} />
+          <SensorRow label="apu_temp" value={hwInfo.tcpuTemp !== null ? `${hwInfo.tcpuTemp.toFixed(0)}\u00B0c` : '\u2014'} isNull={hwInfo.tcpuTemp === null} />
+          <SensorRow label="gpu_clock" value={hwInfo.gpuClockMhz !== null ? `${hwInfo.gpuClockMhz} mhz` : '\u2014'} isNull={hwInfo.gpuClockMhz === null} />
+        </div>
+      )}
     </div>
   );
 }
