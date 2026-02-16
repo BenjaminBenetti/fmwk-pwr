@@ -86,7 +86,7 @@ export function PowerControls({ power, hardwareLimits, hwInfo, onChange }: Power
         currentHwValue={hwInfo?.stapmLimit ?? null}
         onChange={(v) => onChange({ ...power, stapmLimit: v })} />
       <PowerSlider label="boost_power" value={power.slowLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxSlowMw}
-        info="Medium-term boost power limit (Slow PPT). The APU can draw up to this wattage for several seconds during bursty workloads before falling back to the sustained limit."
+        info="Medium-term boost power limit (Slow PPT). The APU can draw up to this wattage for several minutes before falling back to the sustained limit."
         currentHwValue={hwInfo?.slowLimit ?? null}
         onChange={(v) => onChange({ ...power, slowLimit: v })} />
       <PowerSlider label="max_burst_power" value={power.fastLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxFastMw}

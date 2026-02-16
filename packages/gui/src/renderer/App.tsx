@@ -279,7 +279,7 @@ export function App() {
           />
 
           <Divider />
-          <SensorReadout hwInfo={hwInfo} />
+          <SensorReadout hwInfo={hwInfo} hardwareLimits={hardwareLimits} />
 
           <Divider />
           <AutoMatch
