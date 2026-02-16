@@ -5,6 +5,13 @@ const HWMON_BASE = "/sys/class/hwmon";
 const DRM_BASE = "/sys/class/drm";
 const AMD_VENDOR_ID = "0x1002";
 const CPUFREQ_BASE = "/sys/devices/system/cpu";
+const PROC_STAT = "/proc/stat";
+
+/** Parsed CPU time counters from /proc/stat. */
+interface CpuTimes {
+  idle: number;
+  total: number;
+}
 
 // =====================================
 // Path Detection
@@ -87,6 +94,7 @@ export class HwmonReader {
   private readonly k10tempPath: string | null;
   private readonly amdgpuHwmonPath: string | null;
   private readonly gpuCardPath: string | null;
+  private prevCpuTimes: CpuTimes | null = null;
 
   /** Discover hwmon and DRM sysfs paths for available sensors. */
   constructor() {
@@ -165,6 +173,51 @@ export class HwmonReader {
   }
 
   /**
+   * Read CPU utilization as a percentage by computing the delta between
+   * two consecutive reads of /proc/stat. Returns null on the first call
+   * (no previous sample) or if the file is unavailable.
+   *
+   * /proc/stat "cpu" line fields: user nice system idle iowait irq softirq steal guest guest_nice
+   * iowait is counted as idle time.
+   * @returns CPU usage percentage (0-100), or null if unavailable
+   */
+  async readCpuUsage(): Promise<number | null> {
+    try {
+      const raw = await Bun.file(PROC_STAT).text();
+      const current = parseProcStat(raw);
+      if (!current) return null;
+
+      const prev = this.prevCpuTimes;
+      this.prevCpuTimes = current;
+      if (!prev) return null;
+
+      const totalDelta = current.total - prev.total;
+      const idleDelta = current.idle - prev.idle;
+      if (totalDelta <= 0) return null;
+
+      return Math.round(((totalDelta - idleDelta) / totalDelta) * 100);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Read GPU utilization percentage from the DRM sysfs interface.
+   * @returns GPU busy percentage (0-100), or null if unavailable
+   */
+  async readGpuUsage(): Promise<number | null> {
+    if (!this.gpuCardPath) return null;
+    try {
+      const raw = await Bun.file(join(this.gpuCardPath, "gpu_busy_percent")).text();
+      const percent = parseInt(raw.trim(), 10);
+      if (isNaN(percent)) return null;
+      return percent;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
    * Read GPU and CPU power from the gpu_metrics binary file (v3.0 format).
    * This file is exposed by the amdgpu driver at /sys/class/drm/cardN/device/gpu_metrics.
    * @returns Object with gpuPower and cpuPower in mW, or nulls if unavailable
@@ -215,6 +268,25 @@ export class HwmonReader {
   getGpuCardPath(): string | null {
     return this.gpuCardPath;
   }
+}
+
+/**
+ * Parse the aggregate "cpu" line from /proc/stat into idle and total counters.
+ * Fields: user nice system idle iowait irq softirq steal guest guest_nice
+ * iowait is counted as idle time.
+ * @param raw - Full content of /proc/stat
+ * @returns Parsed CPU time counters, or null if the line is missing or malformed
+ */
+function parseProcStat(raw: string): CpuTimes | null {
+  const line = raw.split("\n").find((l) => l.startsWith("cpu "));
+  if (!line) return null;
+  const fields = line.trim().split(/\s+/).slice(1).map(Number);
+  if (fields.length < 5 || fields.some(isNaN)) return null;
+
+  // fields: user(0) nice(1) system(2) idle(3) iowait(4) irq(5) softirq(6) steal(7) ...
+  const idle = fields[3] + (fields[4] ?? 0); // idle + iowait
+  const total = fields.reduce((a, b) => a + b, 0);
+  return { idle, total };
 }
 
 /**

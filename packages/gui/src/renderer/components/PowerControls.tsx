@@ -8,8 +8,27 @@ interface PowerControlsProps {
   onChange: (power: Profile['power']) => void;
 }
 
-function PowerSlider({ label, value, min, max, currentHwValue, onChange }: {
-  label: string; value: number | null; min: number; max: number;
+function InfoIcon({ text }: { text: string }) {
+  return (
+    <span
+      className="info-icon-wrapper"
+      style={{ position: 'relative', display: 'inline-flex', alignItems: 'center' }}
+    >
+      <span
+        style={{
+          display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+          width: 14, height: 14, borderRadius: '50%',
+          border: '1px solid var(--text-muted)', color: 'var(--text-muted)',
+          fontSize: 9, fontFamily: 'var(--font)', cursor: 'help', userSelect: 'none',
+        }}
+      >i</span>
+      <span className="info-tooltip">{text}</span>
+    </span>
+  );
+}
+
+function PowerSlider({ label, info, value, min, max, currentHwValue, onChange }: {
+  label: string; info: string; value: number | null; min: number; max: number;
   currentHwValue: number | null;
   onChange: (value: number | null) => void;
 }) {
@@ -38,6 +57,7 @@ function PowerSlider({ label, value, min, max, currentHwValue, onChange }: {
           <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-primary)' }}>
             {label}
           </span>
+          <InfoIcon text={info} />
         </div>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
           {displayText}
@@ -61,13 +81,16 @@ export function PowerControls({ power, hardwareLimits, hwInfo, onChange }: Power
       <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
         // power_limits
       </span>
-      <PowerSlider label="stapm" value={power.stapmLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxStapmMw}
+      <PowerSlider label="sustained_power" value={power.stapmLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxStapmMw}
+        info="Long-term average power limit (STAPM). The APU will throttle to stay at or below this wattage over time. This is the steady-state power budget for sustained workloads."
         currentHwValue={hwInfo?.stapmLimit ?? null}
         onChange={(v) => onChange({ ...power, stapmLimit: v })} />
-      <PowerSlider label="slow_ppt" value={power.slowLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxSlowMw}
+      <PowerSlider label="boost_power" value={power.slowLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxSlowMw}
+        info="Medium-term boost power limit (Slow PPT). The APU can draw up to this wattage for several seconds during bursty workloads before falling back to the sustained limit."
         currentHwValue={hwInfo?.slowLimit ?? null}
         onChange={(v) => onChange({ ...power, slowLimit: v })} />
-      <PowerSlider label="fast_ppt" value={power.fastLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxFastMw}
+      <PowerSlider label="max_burst_power" value={power.fastLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxFastMw}
+        info="Short-term peak power limit (Fast PPT). The maximum wattage the APU can draw for brief spikes lasting milliseconds to seconds. Allows full turbo performance for short bursts."
         currentHwValue={hwInfo?.fastLimit ?? null}
         onChange={(v) => onChange({ ...power, fastLimit: v })} />
     </div>

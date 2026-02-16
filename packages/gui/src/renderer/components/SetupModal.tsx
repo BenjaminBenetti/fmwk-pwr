@@ -147,9 +147,9 @@ export function SetupModal({ onComplete }: SetupModalProps) {
   if (step === 2) {
     const fields: { key: keyof CustomFormValues; label: string }[] = [
       { key: 'minPowerMw', label: 'min_power (mW)' },
-      { key: 'maxStapmMw', label: 'max_stapm (mW)' },
-      { key: 'maxSlowMw', label: 'max_slow_ppt (mW)' },
-      { key: 'maxFastMw', label: 'max_fast_ppt (mW)' },
+      { key: 'maxStapmMw', label: 'max_sustained_power (mW)' },
+      { key: 'maxSlowMw', label: 'max_boost_power (mW)' },
+      { key: 'maxFastMw', label: 'max_burst_power (mW)' },
     ];
 
     const gpuFields: { key: keyof CustomFormValues; label: string }[] = [

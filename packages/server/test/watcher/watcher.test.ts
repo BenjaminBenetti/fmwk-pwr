@@ -30,6 +30,8 @@ const dummyHwInfo: HardwareInfo = {
   cpuPower: null,
   gpuPower: null,
   socketPower: null,
+  cpuUsagePercent: null,
+  gpuUsagePercent: null,
   tunedProfile: "balanced",
 };
 

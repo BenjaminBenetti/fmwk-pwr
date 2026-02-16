@@ -70,6 +70,16 @@ export function App() {
     document.documentElement.dataset.theme = theme;
   }, [theme]);
 
+  // Re-fetch data when connection is (re)established
+  const prevConnectionState = useRef<string>(connectionState);
+  useEffect(() => {
+    if (connectionState === 'connected' && prevConnectionState.current !== 'connected') {
+      refetchProfiles();
+      refetchConfig();
+    }
+    prevConnectionState.current = connectionState;
+  }, [connectionState, refetchProfiles, refetchConfig]);
+
   // Auto-load active profile only when the server's activeProfile changes
   // (initial load or auto-match switch), not when the profiles list updates
   const prevActiveProfile = useRef<string | null>(null);
@@ -193,7 +203,7 @@ export function App() {
     return (
       <div className="p-3 flex items-center justify-center h-screen bg-bg-primary">
         <p className="text-text-muted text-[13px] font-sans">
-          {connectionState === 'disconnected' ? 'connecting to server...' : 'loading...'}
+          {connectionState === 'disconnected' ? 'connecting to backend...' : 'loading...'}
         </p>
       </div>
     );
@@ -224,7 +234,7 @@ export function App() {
             ? 'border-warning text-warning'
             : 'border-danger text-danger'
         }`}>
-          {connectionState === 'connecting' ? 'connecting to server...' : 'disconnected from server'}
+          {connectionState === 'connecting' ? 'connecting to backend...' : 'disconnected from backend'}
         </div>
       )}
 

@@ -58,7 +58,9 @@ export function SensorReadout({ hwInfo }: SensorReadoutProps) {
           <SensorRow label="gpu" value={`${formatPower(hwInfo.gpuPower)} w`} isNull={hwInfo.gpuPower === null} />
           <SensorRow label="apu_temp" value={hwInfo.tcpuTemp !== null ? `${hwInfo.tcpuTemp.toFixed(0)}\u00B0c` : '\u2014'} isNull={hwInfo.tcpuTemp === null} />
           <SensorRow label="cpu_clock" value={hwInfo.cpuClockMhz !== null ? `${hwInfo.cpuClockMhz} mhz` : '\u2014'} isNull={hwInfo.cpuClockMhz === null} />
+          <SensorRow label="cpu_usage" value={hwInfo.cpuUsagePercent !== null ? `${hwInfo.cpuUsagePercent.toFixed(0)}%` : '\u2014'} isNull={hwInfo.cpuUsagePercent === null} />
           <SensorRow label="gpu_clock" value={hwInfo.gpuClockMhz !== null ? `${hwInfo.gpuClockMhz} mhz` : '\u2014'} isNull={hwInfo.gpuClockMhz === null} />
+          <SensorRow label="gpu_usage" value={hwInfo.gpuUsagePercent !== null ? `${hwInfo.gpuUsagePercent.toFixed(0)}%` : '\u2014'} isNull={hwInfo.gpuUsagePercent === null} />
         </div>
       )}
     </div>

@@ -100,6 +100,8 @@ describe("shared type exports", () => {
       cpuPower: null,
       gpuPower: null,
       socketPower: null,
+      cpuUsagePercent: null,
+      gpuUsagePercent: null,
       tunedProfile: "balanced",
     };
     expect(hwInfo.stapmLimit).toBe(65000);
@@ -178,6 +180,8 @@ describe("shared type exports", () => {
         cpuPower: null,
         gpuPower: null,
         socketPower: null,
+        cpuUsagePercent: null,
+        gpuUsagePercent: null,
         tunedProfile: "balanced",
       },
     };

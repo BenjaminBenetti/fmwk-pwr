@@ -31,6 +31,8 @@ const mockHwInfo: HardwareInfo = {
   cpuPower: null,
   gpuPower: null,
   socketPower: 60000,
+  cpuUsagePercent: null,
+  gpuUsagePercent: null,
   tunedProfile: "balanced",
 };
 

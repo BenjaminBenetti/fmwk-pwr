@@ -24,6 +24,10 @@ export interface HardwareInfo {
   gpuPower: number | null;
   /** Total socket (APU) power draw in mW, or null if unavailable. */
   socketPower: number | null;
+  /** CPU utilization percentage (0-100), or null if unavailable. */
+  cpuUsagePercent: number | null;
+  /** GPU utilization percentage (0-100), or null if unavailable. */
+  gpuUsagePercent: number | null;
   /** Currently active TuneD profile name (e.g. "balanced"). */
   tunedProfile: string;
 }
