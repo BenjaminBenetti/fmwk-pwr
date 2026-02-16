@@ -29,6 +29,7 @@ declare module 'gi://GLib' {
       callback: () => boolean,
     ): number;
     function source_remove(id: number): boolean;
+    function spawn_command_line_async(command_line: string): boolean;
   }
   export default GLib;
 }

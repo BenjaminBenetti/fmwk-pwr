@@ -26,7 +26,7 @@
     "build:preload": "bun build src/main/preload.ts --outdir dist/main --target node --format cjs --external electron",
     "build:renderer": "bun build src/renderer/index.tsx --outdir dist/renderer --target browser --format esm",
     "build:css": "bunx tailwindcss -i src/renderer/styles.css -o dist/renderer/styles.css",
-    "dev": "bun run build && electron dist/main/main.js",
+    "dev": "bun run build && FMWK_PWR_DEV=1 electron dist/main/main.js",
     "test": "bun test",
     "typecheck": "bunx tsc --noEmit",
     "start": "electron dist/main/main.js"

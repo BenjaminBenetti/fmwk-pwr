@@ -29,7 +29,7 @@ function createWindow(): void {
 
   mainWindow.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
-  if (process.env.NODE_ENV !== 'production') {
+  if (process.env.FMWK_PWR_DEV) {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 

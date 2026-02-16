@@ -1,0 +1,55 @@
+[Unit]
+Description=Framework Power Management Daemon
+Documentation=https://github.com/fmwk-pwr/fmwk-pwr
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=__BUN_PATH__ run /usr/lib/fmwk-pwr/server/src/main.ts
+Environment=NODE_ENV=production
+
+# Socket directory — auto-created/removed by systemd
+RuntimeDirectory=fmwk-pwr
+RuntimeDirectoryMode=0755
+
+# Restart policy
+Restart=on-failure
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fmwk-pwr
+
+# Hardening
+ProtectSystem=full
+ProtectHome=read-only
+ProtectKernelTunables=no
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+NoNewPrivileges=no
+PrivateTmp=yes
+RemoveIPC=yes
+RestrictSUIDSGID=yes
+
+# Need read access to /proc/cpuinfo (hardware detection)
+ProcSubset=all
+
+# Need /dev/mem for libryzenadj SMU access
+DeviceAllow=/dev/mem rw
+PrivateDevices=no
+
+# Need write to /etc/fmwk-pwr/ (profiles/config), /sys (hardware control)
+ReadWritePaths=/etc/fmwk-pwr /sys/class/drm /sys/class/hwmon
+
+# Restrict address families to Unix sockets only
+RestrictAddressFamilies=AF_UNIX
+
+# Restrict namespaces
+RestrictNamespaces=yes
+
+[Install]
+WantedBy=multi-user.target

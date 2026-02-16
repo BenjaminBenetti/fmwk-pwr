@@ -1,3 +1,4 @@
+import GLib from 'gi://GLib';
 import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
@@ -88,7 +89,7 @@ class FmwkPwrIndicator extends PanelMenu.Button {
     // Actions
     const openSettingsItem = new PopupMenu.PopupMenuItem('Open Settings');
     openSettingsItem.connect('activate', () => {
-      // TODO: launch Electron GUI (fmwk-pwr-gui)
+      GLib.spawn_command_line_async('fmwk-pwr-gui');
     });
     this.menu.addMenuItem(openSettingsItem);
 
@@ -188,7 +189,7 @@ class FmwkPwrIndicator extends PanelMenu.Button {
     // Actions
     const openSettingsItem = new PopupMenu.PopupMenuItem('Open Settings');
     openSettingsItem.connect('activate', () => {
-      // TODO: launch Electron GUI (fmwk-pwr-gui)
+      GLib.spawn_command_line_async('fmwk-pwr-gui');
     });
     this.menu.addMenuItem(openSettingsItem);
 

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Framework Power
+GenericName=Power Management
+Comment=Power management for Framework Desktop
+Exec=/usr/bin/fmwk-pwr-gui
+Icon=utilities-system-monitor
+Categories=System;Settings;HardwareSettings;
+Terminal=false
+StartupNotify=true
+Keywords=power;framework;amd;ryzen;performance;
