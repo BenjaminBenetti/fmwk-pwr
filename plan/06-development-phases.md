@@ -75,7 +75,6 @@
 ## Non-Goals (for now)
 - Windows support (If someone else adds this I guess... but Windows is kinda crap)
 - Non-AMD hardware
-- CPU frequency control
 - Per-core CPU frequency control
 - Fan control (handled by EC firmware)
 - Undervolting (risky, out of scope)

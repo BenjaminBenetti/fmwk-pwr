@@ -1,3 +1,4 @@
+import GObject from 'gi://GObject';
 import St from 'gi://St';
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
@@ -6,12 +7,16 @@ import type { FmwkPwrClient, StatusResult, Profile } from './client.js';
 
 interface StatusItems {
   limits: St.Label;
-  gpu: St.Label;
-  power: St.Label;
+  cpuClock: St.Label;
+  gpuClock: St.Label;
+  socketPower: St.Label;
+  cpuPower: St.Label;
+  gpuPower: St.Label;
   temp: St.Label;
 }
 
-export class FmwkPwrIndicator extends PanelMenu.Button {
+export const FmwkPwrIndicator = GObject.registerClass(
+class FmwkPwrIndicator extends PanelMenu.Button {
   private _client: FmwkPwrClient;
   private _label: St.Label;
   private _statusItems!: StatusItems;
@@ -22,7 +27,7 @@ export class FmwkPwrIndicator extends PanelMenu.Button {
     this._client = client;
 
     this._label = new St.Label({
-      text: 'fmwk-pwr',
+      text: 'fpwr',
       y_align: 2, // Clutter.ActorAlign.CENTER
     });
     this.add_child(this._label);
@@ -30,29 +35,47 @@ export class FmwkPwrIndicator extends PanelMenu.Button {
     this._buildMenu();
   }
 
-  private _buildMenu(): void {
-    // Status section — non-reactive items
-    const limitsItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    this._statusItems = {
-      limits: new St.Label({ text: 'Limits: --' }),
-      gpu: new St.Label({ text: 'GPU: --' }),
-      power: new St.Label({ text: 'Power: --' }),
-      temp: new St.Label({ text: 'Temp: --' }),
+  private _addStatusItem(label: St.Label): void {
+    const item = new PopupMenu.PopupBaseMenuItem({ reactive: false, style_class: 'fmwk-pwr-status-item' });
+    item.add_child(label);
+    this.menu.addMenuItem(item);
+  }
+
+  private _createStatusItems(texts: Record<keyof StatusItems, string>): StatusItems {
+    return {
+      limits: new St.Label({ text: texts.limits }),
+      cpuClock: new St.Label({ text: texts.cpuClock }),
+      gpuClock: new St.Label({ text: texts.gpuClock }),
+      socketPower: new St.Label({ text: texts.socketPower }),
+      cpuPower: new St.Label({ text: texts.cpuPower }),
+      gpuPower: new St.Label({ text: texts.gpuPower }),
+      temp: new St.Label({ text: texts.temp }),
     };
-    limitsItem.add_child(this._statusItems.limits);
-    this.menu.addMenuItem(limitsItem);
+  }
 
-    const gpuItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    gpuItem.add_child(this._statusItems.gpu);
-    this.menu.addMenuItem(gpuItem);
+  private _addAllStatusItems(): void {
+    this._addStatusItem(this._statusItems.limits);
+    this._addStatusItem(this._statusItems.cpuClock);
+    this._addStatusItem(this._statusItems.gpuClock);
+    this._addStatusItem(this._statusItems.socketPower);
+    this._addStatusItem(this._statusItems.cpuPower);
+    this._addStatusItem(this._statusItems.gpuPower);
+    this._addStatusItem(this._statusItems.temp);
+  }
 
-    const powerItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    powerItem.add_child(this._statusItems.power);
-    this.menu.addMenuItem(powerItem);
+  private static readonly DEFAULT_TEXTS: Record<keyof StatusItems, string> = {
+    limits: 'Limits: --',
+    cpuClock: 'CPU Clock: --',
+    gpuClock: 'GPU Clock: --',
+    socketPower: 'Power: --',
+    cpuPower: 'CPU Power: --',
+    gpuPower: 'GPU Power: --',
+    temp: 'Temp: --',
+  };
 
-    const tempItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    tempItem.add_child(this._statusItems.temp);
-    this.menu.addMenuItem(tempItem);
+  private _buildMenu(): void {
+    this._statusItems = this._createStatusItems(FmwkPwrIndicator.DEFAULT_TEXTS);
+    this._addAllStatusItems();
 
     // Separator before profiles
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -78,14 +101,13 @@ export class FmwkPwrIndicator extends PanelMenu.Button {
   }
 
   updateStatus(status: StatusResult): void {
-    this._label.set_text(status.activeProfile);
+    this._label.set_text(`fpwr: ${status.activeProfile}`);
 
     const hw = status.hwInfo;
     if (hw === null) {
-      this._statusItems.limits.set_text('Limits: --');
-      this._statusItems.gpu.set_text('GPU: --');
-      this._statusItems.power.set_text('Power: --');
-      this._statusItems.temp.set_text('Temp: --');
+      for (const key of Object.keys(FmwkPwrIndicator.DEFAULT_TEXTS) as (keyof StatusItems)[]) {
+        this._statusItems[key].set_text(FmwkPwrIndicator.DEFAULT_TEXTS[key]);
+      }
       return;
     }
 
@@ -94,18 +116,27 @@ export class FmwkPwrIndicator extends PanelMenu.Button {
     const fast = Math.round(hw.fastLimit / 1000);
     this._statusItems.limits.set_text(`Limits: ${stapm}W / ${slow}W / ${fast}W`);
 
-    if (hw.gpuClockMhz !== null) {
-      this._statusItems.gpu.set_text(`GPU: ${hw.gpuClockMhz} MHz`);
-    } else {
-      this._statusItems.gpu.set_text('GPU: auto');
-    }
+    this._statusItems.cpuClock.set_text(
+      hw.cpuClockMhz !== null ? `CPU Clock: ${hw.cpuClockMhz} MHz` : 'CPU Clock: --'
+    );
+
+    this._statusItems.gpuClock.set_text(
+      hw.gpuClockMhz !== null ? `GPU Clock: ${hw.gpuClockMhz} MHz` : 'GPU Clock: auto'
+    );
 
     if (hw.socketPower !== null) {
-      const watts = (hw.socketPower / 1000).toFixed(1);
-      this._statusItems.power.set_text(`Power: ${watts}W`);
+      this._statusItems.socketPower.set_text(`Power: ${(hw.socketPower / 1000).toFixed(1)}W`);
     } else {
-      this._statusItems.power.set_text('Power: --');
+      this._statusItems.socketPower.set_text('Power: --');
     }
+
+    this._statusItems.cpuPower.set_text(
+      hw.cpuPower !== null ? `CPU Power: ${(hw.cpuPower / 1000).toFixed(1)}W` : 'CPU Power: --'
+    );
+
+    this._statusItems.gpuPower.set_text(
+      hw.gpuPower !== null ? `GPU Power: ${(hw.gpuPower / 1000).toFixed(1)}W` : 'GPU Power: --'
+    );
 
     if (hw.tcpuTemp !== null) {
       this._statusItems.temp.set_text(`Temp: ${Math.round(hw.tcpuTemp)}\u00B0C`);
@@ -120,37 +151,18 @@ export class FmwkPwrIndicator extends PanelMenu.Button {
 
   private _rebuildMenu(profiles: Profile[], activeProfileName: string): void {
     // Save current status text
-    const limitsText = this._statusItems.limits.text;
-    const gpuText = this._statusItems.gpu.text;
-    const powerText = this._statusItems.power.text;
-    const tempText = this._statusItems.temp.text;
+    const savedTexts = {} as Record<keyof StatusItems, string>;
+    for (const key of Object.keys(this._statusItems) as (keyof StatusItems)[]) {
+      savedTexts[key] = this._statusItems[key].text ?? FmwkPwrIndicator.DEFAULT_TEXTS[key];
+    }
 
     // Clear everything
     this.menu.removeAll();
     this._profileSection = [];
 
     // Rebuild status section
-    const limitsItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    this._statusItems = {
-      limits: new St.Label({ text: limitsText }),
-      gpu: new St.Label({ text: gpuText }),
-      power: new St.Label({ text: powerText }),
-      temp: new St.Label({ text: tempText }),
-    };
-    limitsItem.add_child(this._statusItems.limits);
-    this.menu.addMenuItem(limitsItem);
-
-    const gpuItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    gpuItem.add_child(this._statusItems.gpu);
-    this.menu.addMenuItem(gpuItem);
-
-    const powerItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    powerItem.add_child(this._statusItems.power);
-    this.menu.addMenuItem(powerItem);
-
-    const tempItem = new PopupMenu.PopupBaseMenuItem({ reactive: false });
-    tempItem.add_child(this._statusItems.temp);
-    this.menu.addMenuItem(tempItem);
+    this._statusItems = this._createStatusItems(savedTexts);
+    this._addAllStatusItems();
 
     // Separator before profiles
     this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -190,8 +202,8 @@ export class FmwkPwrIndicator extends PanelMenu.Button {
 
   setConnected(connected: boolean): void {
     if (!connected) {
-      this._label.set_text('fmwk-pwr (off)');
+      this._label.set_text('fpwr (off)');
     }
     // When connected, the label will be updated by updateStatus
   }
-}
+});

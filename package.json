@@ -11,7 +11,8 @@
     "gui": "bun run --cwd packages/gui dev",
     "gui:build": "bun run --cwd packages/gui build",
     "test": "bun test --cwd packages/server && bun test --cwd packages/shared && bun test --cwd packages/gui",
-    "typecheck": "bun run --cwd packages/server typecheck && bun run --cwd packages/shared typecheck && bun run --cwd packages/gui typecheck"
+    "typecheck": "bun run --cwd packages/server typecheck && bun run --cwd packages/shared typecheck && bun run --cwd packages/gui typecheck",
+    "gnome-ext": "cd packages/gnome-extension && bun run install-ext"
   },
   "devDependencies": {
     "@types/bun": "^1.3.9"

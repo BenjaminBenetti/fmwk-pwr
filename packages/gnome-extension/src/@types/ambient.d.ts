@@ -2,6 +2,19 @@
 declare function log(message: string): void;
 declare function logError(error: Error, message?: string): void;
 
+declare module 'gi://GObject' {
+  namespace GObject {
+    function registerClass<T extends new (...args: any[]) => any>(
+      klass: T,
+    ): T;
+    function registerClass<T extends new (...args: any[]) => any>(
+      options: { GTypeName?: string },
+      klass: T,
+    ): T;
+  }
+  export default GObject;
+}
+
 declare module 'gi://GLib' {
   namespace GLib {
     const PRIORITY_DEFAULT: number;

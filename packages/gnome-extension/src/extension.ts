@@ -8,7 +8,7 @@ import { FmwkPwrIndicator } from './indicator.js';
 
 export default class FmwkPwrExtension extends Extension {
   private _client: FmwkPwrClient | null = null;
-  private _indicator: FmwkPwrIndicator | null = null;
+  private _indicator: InstanceType<typeof FmwkPwrIndicator> | null = null;
   private _pollTimerId: number | null = null;
 
   private _cachedProfiles: Profile[] = [];
