@@ -9,7 +9,7 @@ import { AutoMatch } from './components/AutoMatch';
 import { SetupModal } from './components/SetupModal';
 import { NewProfileModal } from './components/NewProfileModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
-import type { Profile } from './types';
+import type { Profile, CollapsedSections } from './types';
 
 const DEFAULT_PROFILE: Profile = {
   name: 'new-profile',
@@ -20,14 +20,35 @@ const DEFAULT_PROFILE: Profile = {
   match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
 };
 
-function Titlebar() {
+function Titlebar({ compact, onSetCompact }: { compact: boolean; onSetCompact: (compact: boolean) => void }) {
   return (
     <div
       className="flex items-center justify-between h-[40px] -m-3 mb-0 px-3 bg-accent border-b border-border rounded-t-[12px]"
       style={{ WebkitAppRegion: 'drag' } as React.CSSProperties}
     >
       <span className="text-[11px] font-mono text-accent-on tracking-wider">fmwk-pwr</span>
-      <div className="flex" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+      <div className="flex items-center" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
+        <button
+          tabIndex={-1}
+          onClick={() => onSetCompact(true)}
+          className={`w-[28px] h-[28px] flex items-center justify-center border-none text-accent-on cursor-pointer ${compact ? 'bg-black/20' : 'bg-transparent hover:bg-black/20'}`}
+          title="Compact size"
+        >
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <rect x="0.5" y="0.5" width="9" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
+        </button>
+        <button
+          tabIndex={-1}
+          onClick={() => onSetCompact(false)}
+          className={`w-[28px] h-[28px] flex items-center justify-center border-none text-accent-on cursor-pointer ${compact ? 'bg-transparent hover:bg-black/20' : 'bg-black/20'}`}
+          title="Normal size"
+        >
+          <svg width="14" height="12" viewBox="0 0 14 12" fill="none">
+            <rect x="0.5" y="0.5" width="13" height="11" rx="1.5" stroke="currentColor" strokeWidth="1.2" />
+          </svg>
+        </button>
+        <div className="w-px h-[16px] bg-accent-on/30 mx-1" />
         <button
           tabIndex={-1}
           onClick={() => window.fmwkPwr.windowMinimize()}
@@ -50,14 +71,17 @@ function Divider() {
 export function App() {
   const { profiles, loading: profilesLoading, refetch: refetchProfiles } = useProfiles();
   const { activeProfile, hwInfo } = useStatus(1500);
-  const { hardwareLimits, defaultProfile, firstTimeSetup, theme, updateTheme, refetchConfig, loading: configLoading } = useConfig();
+  const { hardwareLimits, defaultProfile, firstTimeSetup, theme, updateTheme, compact, updateCompact, collapsedSections, updateCollapsedSections, refetchConfig, loading: configLoading } = useConfig();
+
+  const toggleSection = useCallback((key: keyof CollapsedSections) => {
+    updateCollapsedSections({ [key]: !collapsedSections[key] });
+  }, [collapsedSections, updateCollapsedSections]);
   const connectionState = useConnection();
 
   const [editProfile, setEditProfile] = useState<Profile | null>(null);
   const [applying, setApplying] = useState(false);
   const [showNewProfile, setShowNewProfile] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
-
   // Tracks the profile state currently applied to hardware (for Apply button)
   const appliedSnapshot = useRef<Profile | null>(null);
   // Tracks what's already saved to server (to skip redundant auto-saves)
@@ -186,14 +210,18 @@ export function App() {
   // Auto-resize window to fit content
   const rootRef = useRef<HTMLDivElement>(null);
   const lastHeight = useRef(0);
+  const lastCompact = useRef(compact);
   useEffect(() => {
     const el = rootRef.current;
     if (!el) return;
+    const width = compact ? 312 : 380;
+    const compactChanged = compact !== lastCompact.current;
+    lastCompact.current = compact;
     const tid = setTimeout(() => {
       const height = el.scrollHeight;
-      if (height !== lastHeight.current) {
+      if (height !== lastHeight.current || compactChanged) {
         lastHeight.current = height;
-        window.fmwkPwr.windowSetSize(380, height);
+        window.fmwkPwr.windowSetSize(width, height);
       }
     }, 100);
     return () => clearTimeout(tid);
@@ -210,7 +238,7 @@ export function App() {
   }
 
   return (
-    <div ref={rootRef} className="p-3 flex flex-col gap-3 text-[13px] select-none bg-bg-primary font-sans">
+    <div ref={rootRef} className="p-3 flex flex-col gap-3 text-[13px] select-none bg-bg-primary font-sans" style={compact ? { zoom: 0.82 } : undefined}>
       {firstTimeSetup && <SetupModal onComplete={refetchConfig} />}
       {showNewProfile && (
         <NewProfileModal
@@ -226,7 +254,7 @@ export function App() {
           onConfirm={handleConfirmDelete}
         />
       )}
-      <Titlebar />
+      <Titlebar compact={compact} onSetCompact={updateCompact} />
 
       {connectionState !== 'connected' && (
         <div className={`px-3 py-1.5 rounded-theme text-[12px] font-sans border ${
@@ -257,6 +285,8 @@ export function App() {
             power={editProfile.power}
             hardwareLimits={hardwareLimits}
             hwInfo={hwInfo}
+            expanded={!collapsedSections.power}
+            onToggleExpanded={() => toggleSection('power')}
             onChange={(power) => setEditProfile({ ...editProfile, power })}
           />
 
@@ -266,6 +296,8 @@ export function App() {
             tunedProfile={editProfile.tunedProfile}
             hardwareLimits={hardwareLimits}
             hwInfo={hwInfo}
+            expanded={!collapsedSections.cpu}
+            onToggleExpanded={() => toggleSection('cpu')}
             onChange={(cpu) => setEditProfile({ ...editProfile, cpu })}
             onTunedProfileChange={(tunedProfile) => setEditProfile({ ...editProfile, tunedProfile })}
           />
@@ -275,17 +307,21 @@ export function App() {
             gpu={editProfile.gpu}
             hardwareLimits={hardwareLimits}
             hwInfo={hwInfo}
+            expanded={!collapsedSections.gpu}
+            onToggleExpanded={() => toggleSection('gpu')}
             onChange={(gpu) => setEditProfile({ ...editProfile, gpu })}
           />
 
           <Divider />
-          <SensorReadout hwInfo={hwInfo} hardwareLimits={hardwareLimits} />
+          <SensorReadout hwInfo={hwInfo} hardwareLimits={hardwareLimits} expanded={!collapsedSections.sensors} onToggleExpanded={() => toggleSection('sensors')} />
 
           <Divider />
           <AutoMatch
             match={editProfile.match}
             profiles={profiles}
             currentProfileName={editProfile.name}
+            expanded={!collapsedSections.autoMatch}
+            onToggleExpanded={() => toggleSection('autoMatch')}
             onChange={(match) => setEditProfile({ ...editProfile, match })}
           />
 

@@ -5,6 +5,8 @@ interface PowerControlsProps {
   power: Profile['power'];
   hardwareLimits: HardwareLimits;
   hwInfo: HardwareInfo | null;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   onChange: (power: Profile['power']) => void;
 }
 
@@ -75,12 +77,24 @@ function PowerSlider({ label, info, value, min, max, currentHwValue, onChange }:
   );
 }
 
-export function PowerControls({ power, hardwareLimits, hwInfo, onChange }: PowerControlsProps) {
+export function PowerControls({ power, hardwareLimits, hwInfo, expanded, onToggleExpanded, onChange }: PowerControlsProps) {
+  if (!expanded) {
+    return (
+      <div className="flex items-center justify-between cursor-pointer" onClick={onToggleExpanded}>
+        <span className="text-[12px] text-text-muted font-sans">// power_limits</span>
+        <span className="text-[14px] text-text-dim font-sans">&gt;</span>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-      <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
-        // power_limits
-      </span>
+      <div className="flex items-center justify-between">
+        <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
+          // power_limits
+        </span>
+        <span className="text-[12px] text-text-dim font-sans cursor-pointer" onClick={onToggleExpanded}>v</span>
+      </div>
       <PowerSlider label="sustained_power" value={power.stapmLimit} min={hardwareLimits.minPowerMw} max={hardwareLimits.maxStapmMw}
         info="Long-term average power limit (STAPM). The APU will throttle to stay at or below this wattage over time. This is the steady-state power budget for sustained workloads."
         currentHwValue={hwInfo?.stapmLimit ?? null}

@@ -6,6 +6,8 @@ interface CpuControlsProps {
   tunedProfile: string | null;
   hardwareLimits: HardwareLimits;
   hwInfo: HardwareInfo | null;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   onChange: (cpu: Profile['cpu']) => void;
   onTunedProfileChange: (tunedProfile: string | null) => void;
 }
@@ -23,17 +25,29 @@ const TUNED_OPTIONS = [
   ...TUNED_PROFILES.map((p) => ({ value: p, label: p })),
 ];
 
-export function CpuControls({ cpu, tunedProfile, hardwareLimits, hwInfo, onChange, onTunedProfileChange }: CpuControlsProps) {
+export function CpuControls({ cpu, tunedProfile, hardwareLimits, hwInfo, expanded, onToggleExpanded, onChange, onTunedProfileChange }: CpuControlsProps) {
   const clockEnabled = cpu.maxClockMhz !== null;
   const clockVal = clockEnabled
     ? cpu.maxClockMhz!
     : hardwareLimits.maxCpuClockMhz;
 
+  if (!expanded) {
+    return (
+      <div className="flex items-center justify-between cursor-pointer" onClick={onToggleExpanded}>
+        <span className="text-[12px] text-text-muted font-sans">// cpu</span>
+        <span className="text-[14px] text-text-dim font-sans">&gt;</span>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
-        // cpu
-      </span>
+      <div className="flex items-center justify-between">
+        <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
+          // cpu
+        </span>
+        <span className="text-[12px] text-text-dim font-sans cursor-pointer" onClick={onToggleExpanded}>v</span>
+      </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

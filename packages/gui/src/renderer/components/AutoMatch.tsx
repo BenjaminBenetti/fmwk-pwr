@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import type { Profile } from '../types';
 import { Checkbox, Dropdown } from './controls';
 
@@ -6,11 +6,12 @@ interface AutoMatchProps {
   match: Profile['match'];
   profiles: { name: string }[];
   currentProfileName: string;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   onChange: (match: Profile['match']) => void;
 }
 
-export function AutoMatch({ match, profiles, currentProfileName, onChange }: AutoMatchProps) {
-  const [expanded, setExpanded] = useState(false);
+export function AutoMatch({ match, profiles, currentProfileName, expanded, onToggleExpanded, onChange }: AutoMatchProps) {
   const [showTooltip, setShowTooltip] = useState(false);
   const [showRevertTooltip, setShowRevertTooltip] = useState(false);
   const infoRef = useRef<HTMLDivElement>(null);
@@ -30,7 +31,7 @@ export function AutoMatch({ match, profiles, currentProfileName, onChange }: Aut
     return (
       <div
         className="flex items-center justify-between cursor-pointer"
-        onClick={() => setExpanded(true)}
+        onClick={onToggleExpanded}
       >
         <span className="text-[12px] text-text-muted font-sans">// auto_match</span>
         <span className="text-[14px] text-text-dim font-sans">&gt;</span>
@@ -48,7 +49,7 @@ export function AutoMatch({ match, profiles, currentProfileName, onChange }: Aut
           <Checkbox checked={match.enabled} onChange={(v) => onChange({ ...match, enabled: v })} />
           <span
             className="text-[12px] text-text-dim font-sans cursor-pointer"
-            onClick={() => setExpanded(false)}
+            onClick={onToggleExpanded}
           >v</span>
         </div>
       </div>

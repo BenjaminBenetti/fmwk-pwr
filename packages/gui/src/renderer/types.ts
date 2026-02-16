@@ -2,7 +2,9 @@ import type {
   Profile,
   HardwareInfo,
   ServerConfig,
+  UserConfig,
   HardwareLimits,
+  CollapsedSections,
   ProfileListResult,
   ProfileGetResult,
   ProfileCreateResult,
@@ -27,7 +29,7 @@ export interface FmwkPwrApi {
   applyProfile(name: string): Promise<ProfileApplyResult>;
   getStatus(): Promise<StatusGetResult>;
   getConfig(): Promise<ConfigGetResult>;
-  updateConfig(config: Partial<ServerConfig>): Promise<ConfigUpdateResult>;
+  updateConfig(config: Partial<Omit<ServerConfig, "user"> & { user: Partial<UserConfig> }>): Promise<ConfigUpdateResult>;
   listPresets(): Promise<PresetListResult>;
   loadPreset(name: string): Promise<PresetLoadResult>;
   getConnectionState(): Promise<ConnectionState>;
@@ -43,4 +45,4 @@ declare global {
   }
 }
 
-export type { Profile, HardwareInfo, ServerConfig, HardwareLimits };
+export type { Profile, HardwareInfo, ServerConfig, HardwareLimits, CollapsedSections };

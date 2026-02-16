@@ -88,7 +88,7 @@ function createState(): ServerState {
         minCpuClockMhz: 400,
         maxCpuClockMhz: 5_500,
       },
-      user: { theme: "default" },
+      user: { theme: "default", compact: false, collapsedSections: { power: false, cpu: false, gpu: false, sensors: true, autoMatch: true } },
     },
   };
 }

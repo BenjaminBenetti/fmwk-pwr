@@ -79,6 +79,14 @@ describe("shared type exports", () => {
       },
       user: {
         theme: "default",
+        compact: false,
+        collapsedSections: {
+          power: false,
+          cpu: false,
+          gpu: false,
+          sensors: true,
+          autoMatch: true,
+        },
       },
     };
     expect(config.defaultProfile).toBe("default");

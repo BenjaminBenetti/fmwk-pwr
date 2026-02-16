@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { HardwareInfo, HardwareLimits } from '../types';
 import { MiniBarChart } from './MiniBarChart';
 
@@ -7,6 +7,8 @@ const MAX_BARS = 40;
 interface SensorReadoutProps {
   hwInfo: HardwareInfo | null;
   hardwareLimits: HardwareLimits;
+  expanded: boolean;
+  onToggleExpanded: () => void;
 }
 
 export function formatPower(mw: number | null): string {
@@ -51,8 +53,7 @@ export function emptyHistories(): Record<SensorKey, number[]> {
   };
 }
 
-export function SensorReadout({ hwInfo, hardwareLimits }: SensorReadoutProps) {
-  const [expanded, setExpanded] = useState(false);
+export function SensorReadout({ hwInfo, hardwareLimits, expanded, onToggleExpanded }: SensorReadoutProps) {
   const histRef = useRef<Record<SensorKey, number[]>>(emptyHistories());
   const [, forceRender] = useState(0);
 
@@ -74,7 +75,7 @@ export function SensorReadout({ hwInfo, hardwareLimits }: SensorReadoutProps) {
     return (
       <div
         className="flex items-center justify-between cursor-pointer"
-        onClick={() => setExpanded(true)}
+        onClick={onToggleExpanded}
       >
         <span className="text-[12px] text-text-muted font-sans">// sensors</span>
         <span className="text-[14px] text-text-dim font-sans">&gt;</span>
@@ -90,7 +91,7 @@ export function SensorReadout({ hwInfo, hardwareLimits }: SensorReadoutProps) {
         <span className="text-[12px] text-text-muted font-sans">// sensors</span>
         <span
           className="text-[12px] text-text-dim font-sans cursor-pointer"
-          onClick={() => setExpanded(false)}
+          onClick={onToggleExpanded}
         >v</span>
       </div>
       {!hwInfo ? (

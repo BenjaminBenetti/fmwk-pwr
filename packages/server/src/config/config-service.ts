@@ -85,7 +85,14 @@ export function handleConfigUpdate(
     if (typeof config.user !== "object" || config.user === null) {
       return errorResponse(id, ErrorCode.InvalidParams, "user must be an object");
     }
-    state.config.user = { ...state.config.user, ...config.user };
+    const mergedUser = { ...state.config.user, ...config.user };
+    if (config.user.collapsedSections) {
+      mergedUser.collapsedSections = {
+        ...state.config.user.collapsedSections,
+        ...config.user.collapsedSections,
+      };
+    }
+    state.config.user = mergedUser;
   }
   if (config.hardwareLimits !== undefined) {
     const mergedLimits = { ...state.config.hardwareLimits, ...config.hardwareLimits };

@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
-import type { HardwareLimits, ServerConfig, UserConfig } from "@fmwk-pwr/shared";
+import type { CollapsedSections, HardwareLimits, ServerConfig, UserConfig } from "@fmwk-pwr/shared";
 
 // =====================================
 // Configuration Defaults
@@ -8,8 +8,18 @@ import type { HardwareLimits, ServerConfig, UserConfig } from "@fmwk-pwr/shared"
 
 const SYSTEM_CONFIG_PATH = "/etc/fmwk-pwr/config.json";
 
+const DEFAULT_COLLAPSED_SECTIONS: CollapsedSections = {
+  power: false,
+  cpu: false,
+  gpu: false,
+  sensors: true,
+  autoMatch: true,
+};
+
 const DEFAULT_USER: UserConfig = {
   theme: "default",
+  compact: false,
+  collapsedSections: { ...DEFAULT_COLLAPSED_SECTIONS },
 };
 
 const DEFAULT_CONFIG: ServerConfig = {
@@ -169,6 +179,25 @@ function validateConfig(raw: unknown): ServerConfig {
         throw new Error("user.theme must be a string");
       }
       config.user.theme = u.theme;
+    }
+    if ("compact" in u) {
+      if (typeof u.compact !== "boolean") {
+        throw new Error("user.compact must be a boolean");
+      }
+      config.user.compact = u.compact;
+    }
+    if ("collapsedSections" in u) {
+      if (typeof u.collapsedSections !== "object" || u.collapsedSections === null) {
+        throw new Error("user.collapsedSections must be an object");
+      }
+      const cs = u.collapsedSections as Record<string, unknown>;
+      const csFields: (keyof CollapsedSections)[] = ["power", "cpu", "gpu", "sensors", "autoMatch"];
+      for (const field of csFields) {
+        if (field in cs && typeof cs[field] !== "boolean") {
+          throw new Error(`user.collapsedSections.${field} must be a boolean`);
+        }
+      }
+      config.user.collapsedSections = { ...DEFAULT_COLLAPSED_SECTIONS, ...cs } as CollapsedSections;
     }
   }
 

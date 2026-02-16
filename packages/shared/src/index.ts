@@ -3,7 +3,7 @@
 // =====================================
 
 export type { Profile } from "./profile.js";
-export type { ServerConfig, UserConfig } from "./server-config.js";
+export type { ServerConfig, UserConfig, CollapsedSections } from "./server-config.js";
 export type { HardwareInfo } from "./hardware-info.js";
 export type { HardwareLimits } from "./hardware-limits.js";
 export type { Preset } from "./preset.js";

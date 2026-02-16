@@ -5,6 +5,8 @@ interface GpuControlsProps {
   gpu: Profile['gpu'];
   hardwareLimits: HardwareLimits;
   hwInfo: HardwareInfo | null;
+  expanded: boolean;
+  onToggleExpanded: () => void;
   onChange: (gpu: Profile['gpu']) => void;
 }
 
@@ -22,7 +24,7 @@ const perfOptions: { label: string; mode: PerfMode }[] = [
   { label: 'max', mode: 'max' },
 ];
 
-export function GpuControls({ gpu, hardwareLimits, hwInfo, onChange }: GpuControlsProps) {
+export function GpuControls({ gpu, hardwareLimits, hwInfo, expanded, onToggleExpanded, onChange }: GpuControlsProps) {
   const mode = getPerfMode(gpu);
   const clockEnabled = mode === 'manual';
   const gpuClockLimit = hwInfo?.gpuClockLimitMhz ?? null;
@@ -44,11 +46,23 @@ export function GpuControls({ gpu, hardwareLimits, hwInfo, onChange }: GpuContro
     }
   };
 
+  if (!expanded) {
+    return (
+      <div className="flex items-center justify-between cursor-pointer" onClick={onToggleExpanded}>
+        <span className="text-[12px] text-text-muted font-sans">// gpu</span>
+        <span className="text-[14px] text-text-dim font-sans">&gt;</span>
+      </div>
+    );
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
-        // gpu
-      </span>
+      <div className="flex items-center justify-between">
+        <span style={{ fontFamily: 'var(--font)', fontSize: 12, color: 'var(--text-muted)' }}>
+          // gpu
+        </span>
+        <span className="text-[12px] text-text-dim font-sans cursor-pointer" onClick={onToggleExpanded}>v</span>
+      </div>
 
       {/* Clock slider */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>

@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer } from 'electron';
 import type {
   Profile,
   ServerConfig,
+  UserConfig,
   ProfileListResult,
   ProfileGetResult,
   ProfileCreateResult,
@@ -39,7 +40,7 @@ const api = {
   // Config
   getConfig: (): Promise<ConfigGetResult> =>
     ipcRenderer.invoke('config:get'),
-  updateConfig: (config: Partial<ServerConfig>): Promise<ConfigUpdateResult> =>
+  updateConfig: (config: Partial<Omit<ServerConfig, "user"> & { user: Partial<UserConfig> }>): Promise<ConfigUpdateResult> =>
     ipcRenderer.invoke('config:update', config),
 
   // Presets

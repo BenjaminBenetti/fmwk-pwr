@@ -4,10 +4,23 @@ import type { HardwareLimits } from "./hardware-limits.js";
 // Server Configuration
 // =====================================
 
+/** Per-section collapsed/expanded state for the GUI. */
+export interface CollapsedSections {
+  power: boolean;
+  cpu: boolean;
+  gpu: boolean;
+  sensors: boolean;
+  autoMatch: boolean;
+}
+
 /** User-facing preferences persisted in the server config. */
 export interface UserConfig {
   /** GUI theme name (e.g. "default", "industrial", "swiss", "warm-retro"). */
   theme: string;
+  /** Whether the GUI uses compact (zoomed-out) mode. */
+  compact: boolean;
+  /** Per-section collapsed/expanded state. */
+  collapsedSections: CollapsedSections;
 }
 
 /** Server-side configuration controlling paths, polling intervals, and the default profile. */

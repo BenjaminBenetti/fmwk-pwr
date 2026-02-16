@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Profile, HardwareInfo, HardwareLimits, ConnectionState } from '../types';
+import type { Profile, HardwareInfo, HardwareLimits, CollapsedSections, ConnectionState } from '../types';
 
 export function useProfiles() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -47,6 +47,8 @@ export function useConfig() {
   const [defaultProfile, setDefaultProfile] = useState<string>('');
   const [firstTimeSetup, setFirstTimeSetup] = useState(false);
   const [theme, setTheme] = useState<string>('default');
+  const [compact, setCompact] = useState(false);
+  const [collapsedSections, setCollapsedSections] = useState<CollapsedSections>({ power: false, cpu: false, gpu: false, sensors: true, autoMatch: true });
   const [loading, setLoading] = useState(true);
 
   const refetchConfig = useCallback(async () => {
@@ -56,6 +58,8 @@ export function useConfig() {
       setDefaultProfile(config.defaultProfile);
       setFirstTimeSetup(config.firstTimeSetup);
       setTheme(config.user?.theme ?? 'default');
+      setCompact(config.user?.compact ?? false);
+      setCollapsedSections(config.user?.collapsedSections ?? { power: false, cpu: false, gpu: false, sensors: true, autoMatch: true });
     } catch (e) { console.error('Failed to fetch config:', e); }
     finally { setLoading(false); }
   }, []);
@@ -67,9 +71,23 @@ export function useConfig() {
     } catch (e) { console.error('Failed to persist theme:', e); }
   }, []);
 
+  const updateCompact = useCallback(async (value: boolean) => {
+    setCompact(value);
+    try {
+      await window.fmwkPwr.updateConfig({ user: { compact: value } });
+    } catch (e) { console.error('Failed to persist compact:', e); }
+  }, []);
+
+  const updateCollapsedSections = useCallback(async (value: Partial<CollapsedSections>) => {
+    setCollapsedSections(prev => ({ ...prev, ...value }));
+    try {
+      await window.fmwkPwr.updateConfig({ user: { collapsedSections: value as CollapsedSections } });
+    } catch (e) { console.error('Failed to persist collapsedSections:', e); }
+  }, []);
+
   useEffect(() => { refetchConfig(); }, [refetchConfig]);
 
-  return { hardwareLimits, defaultProfile, firstTimeSetup, theme, updateTheme, refetchConfig, loading };
+  return { hardwareLimits, defaultProfile, firstTimeSetup, theme, updateTheme, compact, updateCompact, collapsedSections, updateCollapsedSections, refetchConfig, loading };
 }
 
 export function useConnection() {

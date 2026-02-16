@@ -1,4 +1,4 @@
-import type { ServerConfig } from "../server-config.js";
+import type { ServerConfig, UserConfig } from "../server-config.js";
 
 // =====================================
 // Params
@@ -10,7 +10,7 @@ export interface ConfigGetParams {}
 /** Parameters for config.update. */
 export interface ConfigUpdateParams {
   /** Partial server configuration -- only provided fields are updated. */
-  config: Partial<ServerConfig>;
+  config: Partial<Omit<ServerConfig, "user"> & { user: Partial<UserConfig> }>;
 }
 
 // =====================================

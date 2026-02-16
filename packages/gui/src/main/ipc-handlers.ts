@@ -1,7 +1,7 @@
 import { ipcMain, type BrowserWindow } from 'electron';
 import type { SocketClient } from './socket-client.js';
 import { Methods } from '@fmwk-pwr/shared';
-import type { Profile, ServerConfig } from '@fmwk-pwr/shared';
+import type { Profile, ServerConfig, UserConfig } from '@fmwk-pwr/shared';
 
 export function registerIpcHandlers(client: SocketClient): void {
   // Profile methods
@@ -25,7 +25,7 @@ export function registerIpcHandlers(client: SocketClient): void {
   // Config
   ipcMain.handle('config:get', () =>
     client.request(Methods.ConfigGet, {}));
-  ipcMain.handle('config:update', (_e, config: Partial<ServerConfig>) =>
+  ipcMain.handle('config:update', (_e, config: Partial<Omit<ServerConfig, "user"> & { user: Partial<UserConfig> }>) =>
     client.request(Methods.ConfigUpdate, { config }));
 
   // Presets
