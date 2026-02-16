@@ -1,6 +1,10 @@
 # fmwk-pwr
 
-APU management tool for the Framework Desktop, and other Strix Halo APUs. 
+APU management tool for the Framework Desktop, and other Strix Halo APUs.
+
+<p align="center">
+  <img src="design/fmwk-pwr-readme-pic.png" alt="fmwk-pwr dashboard" width="800">
+</p>
 
 ## Supported APUs
 
