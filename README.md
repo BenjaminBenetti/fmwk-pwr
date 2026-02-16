@@ -1,30 +1,42 @@
 # fmwk-pwr
 
-Power management tool for the Framework Desktop. Client/server architecture with a systemd-managed server, Electron GUI, and GNOME top bar extension.
+APU management tool for the Framework Desktop, and other Strix Halo APUs. 
 
 ## Supported APUs
 
-| APU | Supported |
-|-----|-----------|
-| AMD Ryzen AI MAX+ 395 | ✅ |
-| AMD Ryzen AI MAX+ 392 | ❓ |
-| AMD Ryzen AI MAX+ 388 | ❓ |
-| AMD Ryzen AI MAX 390 | ❓ |
-| AMD Ryzen AI MAX 385 | ❓ |
-| AMD Ryzen AI MAX 380 | ❓ |
+| APU | Status |
+|-----|--------|
+| AMD Ryzen AI MAX+ 395 | Tested |
+| AMD Ryzen AI MAX+ 392 | Expected to work |
+| AMD Ryzen AI MAX+ 388 | Expected to work |
+| AMD Ryzen AI MAX 390 | Expected to work |
+| AMD Ryzen AI MAX 385 | Expected to work |
+| AMD Ryzen AI MAX 380 | Expected to work |
 
-✅ Tested on real hardware | ❓ Expected to work but not yet verified
+## Requirements
+
+- Linux (Fedora, Debian/Ubuntu, or Arch)
+- Secure Boot disabled (required for `/dev/mem` access)
+- `git`
+
+## Installation
+
+Installs the server, desktop app, and GNOME extension.
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/BenjaminBenetti/fmwk-pwr/main/scripts/web-install.sh | sudo bash
+```
 
 ## Architecture
 
 ```
 Electron GUI / GNOME Extension
-        │  Unix socket (NDJSON)
-        ▼
+        |  Unix socket (NDJSON)
+        v
    fmwk-pwr server
-        │
-   ┌────┼────────────┐
-   │    │             │
+        |
+   +----+------------+
+   |    |             |
 libryzenadj   sysfs/HWMON   tuned
 (SMU limits)  (sensors/GPU)  (profiles)
 ```
@@ -40,7 +52,14 @@ The server exposes a Unix socket IPC interface. Clients send JSON requests and r
 | `@fmwk-pwr/gui` | `packages/gui` | Electron GUI (main/renderer/preload) |
 | `@fmwk-pwr/gnome-extension` | `packages/gnome-extension` | GNOME Shell top bar extension |
 
-## Quick Commands
+## Development
+
+### Prerequisites
+
+- [Bun](https://bun.sh) (runtime and package manager)
+- A supported AMD APU (see table above)
+
+### Quick Commands
 
 ```sh
 bun install                  # Install all dependencies
@@ -51,52 +70,33 @@ bun run typecheck            # Type check all packages
 bun run gui:build            # Build the GUI without launching
 ```
 
-## Development Setup
+### Setup
 
-### Prerequisites
-
-- [Bun](https://bun.sh) (runtime and package manager)
-- Linux with a supported AMD APU (see table above)
-- Secure Boot disabled (required for `/dev/mem` access used by libryzenadj)
-- Root access (server requires it for SMU and sysfs writes)
-
-### 1. Install dependencies
+1. Install dependencies
 
 ```sh
 bun install
 ```
 
-### 2. Build and install libryzenadj
+2. Build and install libryzenadj
 
 ```sh
 sudo ./scripts/install-libryzenadj.sh
 ```
 
-### 3. Run the server
+3. Run the server
 
 ```sh
 bun run server
 ```
 
-### 4. Launch the GUI
+4. Launch the GUI
 
 ```sh
 bun run gui
 ```
 
 The GUI connects to the server over a Unix socket. Start the server first.
-
-### 5. Run tests
-
-```sh
-bun run test
-```
-
-### 6. Type check
-
-```sh
-bun run typecheck
-```
 
 ## Project Structure
 
@@ -127,7 +127,7 @@ fmwk-pwr/
 │   │   └── test/main/             # Main process tests
 │   └── gnome-extension/           # GNOME Shell top bar extension
 │       └── src/
-├── systemd/                       # systemd unit file (planned)
+├── systemd/                       # systemd unit file
 ├── scripts/
 │   ├── install-libryzenadj.sh
 │   └── deps/                      # Distro-specific dependency installers

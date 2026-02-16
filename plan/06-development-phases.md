@@ -44,7 +44,7 @@
 
 **Milestone**: Launch a game -> profile auto-applies. Exit game -> stays on current profile.
 
-## Phase 4: systemd Integration
+## Phase 4: systemd Integration ✅
 **Goal**: Server runs as a proper system service.
 
 1. systemd unit file
