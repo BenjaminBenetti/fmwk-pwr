@@ -236,6 +236,10 @@ ELECTRON_DIR="$(dirname "$ELECTRON_BIN")"
 cp -r "$ELECTRON_DIR" "$INSTALL_DIR/gui/electron"
 info "Bundled electron from $ELECTRON_DIR"
 
+# Electron's SUID sandbox requires root ownership + setuid bit
+chown root:root "$INSTALL_DIR/gui/electron/chrome-sandbox"
+chmod 4755 "$INSTALL_DIR/gui/electron/chrome-sandbox"
+
 # Place app inside Electron's resources/app/ so app.isPackaged is true
 mkdir -p "$INSTALL_DIR/gui/electron/resources/app"
 cp -r "$PROJECT_DIR/packages/gui/dist" "$INSTALL_DIR/gui/electron/resources/app/dist"
