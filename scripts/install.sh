@@ -259,7 +259,9 @@ step "Installing GNOME extension to $GNOME_EXT_DIR"
 rm -rf "$GNOME_EXT_DIR"
 mkdir -p "$GNOME_EXT_DIR"
 cp -r "$PROJECT_DIR/packages/gnome-extension/dist/"* "$GNOME_EXT_DIR/"
-gnome-extensions enable fmwk-pwr@fmwk-pwr
+
+# gnome-extensions writes to per-user dconf, so run as the invoking user, not root
+sudo -u "${SUDO_USER:?}" gnome-extensions enable fmwk-pwr@fmwk-pwr
 
 success "GNOME extension installed."
 
