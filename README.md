@@ -17,6 +17,19 @@ APU management tool for the Framework Desktop, and other Strix Halo APUs.
 | AMD Ryzen AI MAX 385 | Expected to work |
 | AMD Ryzen AI MAX 380 | Expected to work |
 
+## Supported Distros
+
+| Distro | Status |
+|--------|--------|
+| Fedora | Supported |
+| Red Hat | Supported |
+| Ubuntu | Supported |
+| Debian | Supported |
+| Arch | Supported |
+
+Other distros will probably work, but you will need to manually install the dependencies 
+that the installer normally installs for you.
+
 ## Requirements
 
 - Linux (Fedora, Debian/Ubuntu, or Arch)
