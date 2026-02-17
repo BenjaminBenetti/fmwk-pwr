@@ -260,8 +260,11 @@ rm -rf "$GNOME_EXT_DIR"
 mkdir -p "$GNOME_EXT_DIR"
 cp -r "$PROJECT_DIR/packages/gnome-extension/dist/"* "$GNOME_EXT_DIR/"
 
-# gnome-extensions writes to per-user dconf, so run as the invoking user, not root
-sudo -u "${SUDO_USER:?}" gnome-extensions enable fmwk-pwr@fmwk-pwr
+# gnome-extensions writes to per-user dconf via D-Bus, so run as the invoking user
+# with their session bus address (sudo strips it from the environment)
+REAL_UID=$(id -u "${SUDO_USER:?}")
+sudo -u "$SUDO_USER" DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$REAL_UID/bus" \
+  gnome-extensions enable fmwk-pwr@fmwk-pwr
 
 success "GNOME extension installed."
 
