@@ -1,6 +1,7 @@
 import { dlopen, FFIType } from "bun:ffi";
 
 const LIB_PATH = "/usr/lib/fmwk-pwr/libryzenadj.so";
+const LOCKOUT_MS = 60_000;
 
 // =====================================
 // FFI Symbols
@@ -50,6 +51,7 @@ export class RyzenAdj {
   private readonly lib: Lib;
   private readonly handle: NonNullable<ReturnType<Lib["symbols"]["init_ryzenadj"]>>;
   private cache: { stapm: number; slow: number; fast: number } | null = null;
+  private lockedUntil = 0;
 
   /**
    * Open libryzenadj.so and initialize the SMU handle and PM table.
@@ -72,6 +74,21 @@ export class RyzenAdj {
     }
   }
 
+  private assertNotLocked(): void {
+    const remaining = this.lockedUntil - Date.now();
+    if (remaining > 0) {
+      throw new Error(
+        `SMU locked out for ${Math.ceil(remaining / 1000)}s after a previous error`,
+      );
+    }
+  }
+
+  private engageLockout(cause: unknown): never {
+    this.lockedUntil = Date.now() + LOCKOUT_MS;
+    console.log(`[ryzenadj] SMU error — locked out for ${LOCKOUT_MS / 1000}s`);
+    throw cause;
+  }
+
   // =====================================
   // Setters
   // =====================================
@@ -82,10 +99,11 @@ export class RyzenAdj {
    * @throws If the SMU command fails (non-zero return code)
    */
   setStapmLimit(mW: number): void {
+    this.assertNotLocked();
     console.log(`[ryzenadj] setStapmLimit(${mW})`);
     const result = this.lib.symbols.set_stapm_limit(this.handle, mW);
     if (result !== 0) {
-      throw new Error(`Failed to set STAPM limit (error code: ${result})`);
+      this.engageLockout(new Error(`Failed to set STAPM limit (error code: ${result})`));
     }
     if (this.cache) this.cache.stapm = mW;
   }
@@ -96,10 +114,11 @@ export class RyzenAdj {
    * @throws If the SMU command fails (non-zero return code)
    */
   setSlowLimit(mW: number): void {
+    this.assertNotLocked();
     console.log(`[ryzenadj] setSlowLimit(${mW})`);
     const result = this.lib.symbols.set_slow_limit(this.handle, mW);
     if (result !== 0) {
-      throw new Error(`Failed to set slow limit (error code: ${result})`);
+      this.engageLockout(new Error(`Failed to set slow limit (error code: ${result})`));
     }
     if (this.cache) this.cache.slow = mW;
   }
@@ -110,10 +129,11 @@ export class RyzenAdj {
    * @throws If the SMU command fails (non-zero return code)
    */
   setFastLimit(mW: number): void {
+    this.assertNotLocked();
     console.log(`[ryzenadj] setFastLimit(${mW})`);
     const result = this.lib.symbols.set_fast_limit(this.handle, mW);
     if (result !== 0) {
-      throw new Error(`Failed to set fast limit (error code: ${result})`);
+      this.engageLockout(new Error(`Failed to set fast limit (error code: ${result})`));
     }
     if (this.cache) this.cache.fast = mW;
   }
@@ -142,7 +162,12 @@ export class RyzenAdj {
     if (this.cache) {
       return { ...this.cache };
     }
-    this.refreshTable();
+    this.assertNotLocked();
+    try {
+      this.refreshTable();
+    } catch (e) {
+      this.engageLockout(e);
+    }
     this.cache = {
       stapm: Math.round(this.lib.symbols.get_stapm_limit(this.handle) * 1000),
       slow: Math.round(this.lib.symbols.get_slow_limit(this.handle) * 1000),
