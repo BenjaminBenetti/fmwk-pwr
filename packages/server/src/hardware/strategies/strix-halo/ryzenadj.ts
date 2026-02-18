@@ -49,6 +49,7 @@ type Lib = ReturnType<typeof dlopen<typeof symbols>>;
 export class RyzenAdj {
   private readonly lib: Lib;
   private readonly handle: NonNullable<ReturnType<Lib["symbols"]["init_ryzenadj"]>>;
+  private cache: { stapm: number; slow: number; fast: number } | null = null;
 
   /**
    * Open libryzenadj.so and initialize the SMU handle and PM table.
@@ -81,10 +82,12 @@ export class RyzenAdj {
    * @throws If the SMU command fails (non-zero return code)
    */
   setStapmLimit(mW: number): void {
+    console.log(`[ryzenadj] setStapmLimit(${mW})`);
     const result = this.lib.symbols.set_stapm_limit(this.handle, mW);
     if (result !== 0) {
       throw new Error(`Failed to set STAPM limit (error code: ${result})`);
     }
+    if (this.cache) this.cache.stapm = mW;
   }
 
   /**
@@ -93,10 +96,12 @@ export class RyzenAdj {
    * @throws If the SMU command fails (non-zero return code)
    */
   setSlowLimit(mW: number): void {
+    console.log(`[ryzenadj] setSlowLimit(${mW})`);
     const result = this.lib.symbols.set_slow_limit(this.handle, mW);
     if (result !== 0) {
       throw new Error(`Failed to set slow limit (error code: ${result})`);
     }
+    if (this.cache) this.cache.slow = mW;
   }
 
   /**
@@ -105,10 +110,12 @@ export class RyzenAdj {
    * @throws If the SMU command fails (non-zero return code)
    */
   setFastLimit(mW: number): void {
+    console.log(`[ryzenadj] setFastLimit(${mW})`);
     const result = this.lib.symbols.set_fast_limit(this.handle, mW);
     if (result !== 0) {
       throw new Error(`Failed to set fast limit (error code: ${result})`);
     }
+    if (this.cache) this.cache.fast = mW;
   }
 
   // =====================================
@@ -132,12 +139,17 @@ export class RyzenAdj {
    * @returns Current STAPM, slow PPT, and fast PPT limits in mW
    */
   getLimits(): { stapm: number; slow: number; fast: number } {
+    if (this.cache) {
+      return { ...this.cache };
+    }
     this.refreshTable();
-    return {
+    this.cache = {
       stapm: Math.round(this.lib.symbols.get_stapm_limit(this.handle) * 1000),
       slow: Math.round(this.lib.symbols.get_slow_limit(this.handle) * 1000),
       fast: Math.round(this.lib.symbols.get_fast_limit(this.handle) * 1000),
     };
+    console.log(`[ryzenadj] getLimits() → SMU read ${JSON.stringify(this.cache)}`);
+    return { ...this.cache };
   }
 
   /**
