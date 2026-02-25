@@ -39,11 +39,12 @@ export interface HardwareStrategy {
   applyCpuMaxClock(maxClockMhz: number | null): Promise<void>;
 
   /**
-   * Set the GPU clock frequency. Implies "manual" performance level.
-   * Pass null to skip (no change).
-   * @param clockMhz - Target GPU clock frequency in MHz
+   * Set the GPU clock range. Implies "manual" performance level.
+   * Pass null for both to skip (no change).
+   * @param maxClockMhz - Maximum GPU clock frequency in MHz, or null to skip
+   * @param minClockMhz - Minimum GPU clock frequency in MHz, or null to skip
    */
-  applyGpuClock(clockMhz: number | null): Promise<void>;
+  applyGpuClock(maxClockMhz: number | null, minClockMhz: number | null): Promise<void>;
 
   /**
    * Set the GPU performance level policy.

@@ -16,6 +16,8 @@ export interface HardwareInfo {
   gpuClockMhz: number | null;
   /** Configured max GPU clock limit in MHz from pp_od_clk_voltage, or null if unavailable. */
   gpuClockLimitMhz: number | null;
+  /** Configured min GPU clock limit in MHz from pp_od_clk_voltage, or null if unavailable. */
+  gpuMinClockLimitMhz: number | null;
   /** CPU (Tctl) temperature in degrees C, or null if unavailable. */
   tcpuTemp: number | null;
   /** CPU package power draw in mW, or null if unavailable. */

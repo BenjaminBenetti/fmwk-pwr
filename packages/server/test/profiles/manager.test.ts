@@ -10,7 +10,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
     name: "test-profile",
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
     cpu: { maxClockMhz: null },
-    gpu: { clockMhz: null, perfLevel: null },
+    gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     ...overrides,
@@ -24,6 +24,7 @@ const mockHwInfo: HardwareInfo = {
   cpuClockMhz: null,
   gpuClockMhz: null,
   gpuClockLimitMhz: null,
+  gpuMinClockLimitMhz: null,
   tcpuTemp: 45,
   cpuPower: null,
   gpuPower: null,
@@ -295,25 +296,26 @@ describe("ProfileManager", () => {
       expect(captured[0].fast).toBe(150000);
     });
 
-    test("calls applyGpuClock when clockMhz is set", async () => {
-      const capturedClocks: (number | null)[] = [];
-      mockHw.applyGpuClock = async (clockMhz) => {
-        capturedClocks.push(clockMhz);
+    test("calls applyGpuClock when maxClockMhz is set", async () => {
+      const capturedClocks: { max: number | null; min: number | null }[] = [];
+      mockHw.applyGpuClock = async (maxClockMhz, minClockMhz) => {
+        capturedClocks.push({ max: maxClockMhz, min: minClockMhz });
       };
 
       await manager.create(
         makeProfile({
           name: "gpu-clock-test",
-          gpu: { clockMhz: 2500, perfLevel: null },
+          gpu: { maxClockMhz: 2500, minClockMhz: null, perfLevel: null },
         }),
       );
       await manager.apply("gpu-clock-test");
 
       expect(capturedClocks).toHaveLength(1);
-      expect(capturedClocks[0]).toBe(2500);
+      expect(capturedClocks[0].max).toBe(2500);
+      expect(capturedClocks[0].min).toBeNull();
     });
 
-    test("calls applyGpuPerfLevel when clockMhz is null", async () => {
+    test("calls applyGpuPerfLevel when maxClockMhz is null", async () => {
       const capturedLevels: ("auto" | "high" | null)[] = [];
       mockHw.applyGpuPerfLevel = async (level) => {
         capturedLevels.push(level);
@@ -322,7 +324,7 @@ describe("ProfileManager", () => {
       await manager.create(
         makeProfile({
           name: "perf-level-test",
-          gpu: { clockMhz: null, perfLevel: "high" },
+          gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: "high" },
         }),
       );
       await manager.apply("perf-level-test");
@@ -340,7 +342,7 @@ describe("ProfileManager", () => {
       await manager.create(
         makeProfile({
           name: "null-perf-test",
-          gpu: { clockMhz: null, perfLevel: null },
+          gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
         }),
       );
       await manager.apply("null-perf-test");
@@ -366,7 +368,7 @@ describe("ProfileManager", () => {
       expect(capturedTuned[0]).toBe("throughput-performance");
     });
 
-    test("does not call applyGpuClock when clockMhz is null", async () => {
+    test("does not call applyGpuClock when maxClockMhz is null", async () => {
       let gpuClockCalled = false;
       mockHw.applyGpuClock = async () => {
         gpuClockCalled = true;
@@ -375,7 +377,7 @@ describe("ProfileManager", () => {
       await manager.create(
         makeProfile({
           name: "no-clock-test",
-          gpu: { clockMhz: null, perfLevel: "auto" },
+          gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: "auto" },
         }),
       );
       await manager.apply("no-clock-test");
@@ -427,12 +429,12 @@ describe("profile validation", () => {
   });
 
   test("rejects profile with missing power object", async () => {
-    const bad = { name: "x", gpu: { clockMhz: null, perfLevel: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
+    const bad = { name: "x", gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
     await expect(manager.create(bad)).rejects.toThrow("power must be an object");
   });
 
   test("rejects profile with missing cpu object", async () => {
-    const bad = { name: "x", power: { stapmLimit: null, slowLimit: null, fastLimit: null }, gpu: { clockMhz: null, perfLevel: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
+    const bad = { name: "x", power: { stapmLimit: null, slowLimit: null, fastLimit: null }, gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null }, tunedProfile: null, match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null } } as unknown as Profile;
     await expect(manager.create(bad)).rejects.toThrow("cpu must be an object");
   });
 

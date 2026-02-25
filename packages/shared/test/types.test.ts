@@ -37,7 +37,7 @@ describe("shared type exports", () => {
       name: "test",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       cpu: { maxClockMhz: null },
-      gpu: { clockMhz: null, perfLevel: null },
+      gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
@@ -51,13 +51,13 @@ describe("shared type exports", () => {
       description: "A test profile",
       power: { stapmLimit: 100000, slowLimit: 120000, fastLimit: 150000 },
       cpu: { maxClockMhz: null },
-      gpu: { clockMhz: 2500, perfLevel: null },
+      gpu: { maxClockMhz: 2500, minClockMhz: null, perfLevel: null },
       tunedProfile: "balanced",
       match: { enabled: true, processPatterns: ["steam"], priority: 10, revertProfile: null },
     };
     expect(profile.description).toBe("A test profile");
     expect(profile.power.stapmLimit).toBe(100000);
-    expect(profile.gpu.clockMhz).toBe(2500);
+    expect(profile.gpu.maxClockMhz).toBe(2500);
   });
 
   test("ServerConfig type can be constructed", () => {
@@ -104,6 +104,7 @@ describe("shared type exports", () => {
       cpuClockMhz: null,
       gpuClockMhz: null,
       gpuClockLimitMhz: null,
+      gpuMinClockLimitMhz: null,
       tcpuTemp: null,
       cpuPower: null,
       gpuPower: null,
@@ -173,7 +174,7 @@ describe("shared type exports", () => {
         name: "test",
         power: { stapmLimit: null, slowLimit: null, fastLimit: null },
         cpu: { maxClockMhz: null },
-        gpu: { clockMhz: null, perfLevel: null },
+        gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
         tunedProfile: null,
         match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
       },
@@ -184,6 +185,7 @@ describe("shared type exports", () => {
         cpuClockMhz: null,
         gpuClockMhz: null,
         gpuClockLimitMhz: null,
+        gpuMinClockLimitMhz: null,
         tcpuTemp: null,
         cpuPower: null,
         gpuPower: null,
@@ -211,7 +213,7 @@ describe("shared type exports", () => {
       name: "a",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       cpu: { maxClockMhz: null },
-      gpu: { clockMhz: null, perfLevel: "auto" },
+      gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: "auto" },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
@@ -219,7 +221,7 @@ describe("shared type exports", () => {
       name: "b",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       cpu: { maxClockMhz: null },
-      gpu: { clockMhz: null, perfLevel: "high" },
+      gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: "high" },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };
@@ -227,7 +229,7 @@ describe("shared type exports", () => {
       name: "c",
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
       cpu: { maxClockMhz: null },
-      gpu: { clockMhz: null, perfLevel: null },
+      gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     };

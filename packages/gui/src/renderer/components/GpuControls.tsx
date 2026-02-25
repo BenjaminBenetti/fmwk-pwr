@@ -1,5 +1,5 @@
 import type { Profile, HardwareLimits, HardwareInfo } from '../types';
-import { Checkbox, CustomSlider } from './controls';
+import { Checkbox, RangeSlider } from './controls';
 
 interface GpuControlsProps {
   gpu: Profile['gpu'];
@@ -13,7 +13,7 @@ interface GpuControlsProps {
 type PerfMode = 'auto' | 'manual' | 'max';
 
 function getPerfMode(gpu: Profile['gpu']): PerfMode {
-  if (gpu.clockMhz !== null) return 'manual';
+  if (gpu.maxClockMhz !== null) return 'manual';
   if (gpu.perfLevel === 'high') return 'max';
   return 'auto';
 }
@@ -28,20 +28,24 @@ export function GpuControls({ gpu, hardwareLimits, hwInfo, expanded, onToggleExp
   const mode = getPerfMode(gpu);
   const clockEnabled = mode === 'manual';
   const gpuClockLimit = hwInfo?.gpuClockLimitMhz ?? null;
-  const clockVal = clockEnabled
-    ? (gpu.clockMhz ?? hardwareLimits.minGpuClockMhz)
+  const gpuMinClockLimit = hwInfo?.gpuMinClockLimitMhz ?? null;
+  const highVal = clockEnabled
+    ? (gpu.maxClockMhz ?? hardwareLimits.maxGpuClockMhz)
     : (gpuClockLimit ?? hardwareLimits.minGpuClockMhz);
+  const lowVal = clockEnabled
+    ? (gpu.minClockMhz ?? hardwareLimits.minGpuClockMhz)
+    : (gpuMinClockLimit ?? hardwareLimits.minGpuClockMhz);
 
   const handleModeChange = (newMode: PerfMode) => {
     switch (newMode) {
       case 'auto':
-        onChange({ clockMhz: null, perfLevel: 'auto' });
+        onChange({ maxClockMhz: null, minClockMhz: null, perfLevel: 'auto' });
         break;
       case 'manual':
-        onChange({ clockMhz: hardwareLimits.minGpuClockMhz, perfLevel: null });
+        onChange({ maxClockMhz: hardwareLimits.maxGpuClockMhz, minClockMhz: hardwareLimits.minGpuClockMhz, perfLevel: null });
         break;
       case 'max':
-        onChange({ clockMhz: null, perfLevel: 'high' });
+        onChange({ maxClockMhz: null, minClockMhz: null, perfLevel: 'high' });
         break;
     }
   };
@@ -64,28 +68,29 @@ export function GpuControls({ gpu, hardwareLimits, hwInfo, expanded, onToggleExp
         <span className="text-[12px] text-text-dim font-sans cursor-pointer" onClick={onToggleExpanded}>v</span>
       </div>
 
-      {/* Clock slider */}
+      {/* Clock range slider */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Checkbox checked={clockEnabled} onChange={(v) => handleModeChange(v ? 'manual' : 'auto')} />
             <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-primary)' }}>
-              max_clock
+              gpu_clock
             </span>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
             {clockEnabled || gpuClockLimit !== null
-              ? `${clockVal} mhz / ${hardwareLimits.maxGpuClockMhz} mhz`
+              ? `${lowVal} — ${highVal} mhz`
               : '\u2014'}
           </span>
         </div>
-        <CustomSlider
-          value={clockVal}
+        <RangeSlider
+          low={lowVal}
+          high={highVal}
           min={hardwareLimits.minGpuClockMhz}
           max={hardwareLimits.maxGpuClockMhz}
           step={100}
           disabled={!clockEnabled}
-          onChange={(v) => onChange({ ...gpu, clockMhz: v })}
+          onChange={(lo, hi) => onChange({ ...gpu, minClockMhz: lo, maxClockMhz: hi })}
         />
       </div>
 

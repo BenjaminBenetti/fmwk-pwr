@@ -24,8 +24,10 @@ export interface Profile {
   };
   /** GPU configuration applied via amdgpu sysfs. */
   gpu: {
-    /** Fixed GPU clock frequency in MHz, or null to leave unmanaged. Setting this implies manual performance level. */
-    clockMhz: number | null;
+    /** Maximum GPU clock frequency in MHz, or null to leave unmanaged. Setting this implies manual performance level. */
+    maxClockMhz: number | null;
+    /** Minimum GPU clock frequency in MHz, or null to leave unmanaged. Used with maxClockMhz for a clock range. */
+    minClockMhz: number | null;
     /** GPU performance level: "auto" for driver-managed, "high" for peak clocks, or null to leave unchanged. */
     perfLevel: "auto" | "high" | null;
   };

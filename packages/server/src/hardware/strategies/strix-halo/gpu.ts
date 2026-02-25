@@ -41,14 +41,19 @@ export class GpuController {
   // =====================================
 
   /**
-   * Set the GPU SCLK frequency via the OverDrive interface.
-   * Writes the target clock to pp_od_clk_voltage, then commits with "c".
+   * Set the GPU SCLK clock range via the OverDrive interface.
+   * Writes both level 0 (min) and level 1 (max) to pp_od_clk_voltage,
+   * then commits once with "c". Both levels must be written before
+   * committing — committing after each write causes the driver to see
+   * an intermediate state that produces incorrect DPM levels.
    * Performance level must be set to "manual" before calling this.
-   * @param mhz - Target GPU clock frequency in MHz
+   * @param minMhz - Minimum GPU clock frequency in MHz, or null to skip
+   * @param maxMhz - Maximum GPU clock frequency in MHz, or null to skip
    */
-  async setClock(mhz: number): Promise<void> {
+  async setClockRange(minMhz: number | null, maxMhz: number | null): Promise<void> {
     const clkPath = join(this.sysfsPath, "pp_od_clk_voltage");
-    await Bun.write(clkPath, `s 1 ${mhz}`);
+    if (minMhz !== null) await Bun.write(clkPath, `s 0 ${minMhz}`);
+    if (maxMhz !== null) await Bun.write(clkPath, `s 1 ${maxMhz}`);
     await Bun.write(clkPath, "c");
   }
 
@@ -75,6 +80,20 @@ export class GpuController {
     try {
       const raw = await Bun.file(join(this.sysfsPath, "pp_od_clk_voltage")).text();
       return parseClockLimit(raw);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Read the configured min GPU clock limit from pp_od_clk_voltage.
+   * Parses the OD_SCLK section for the lowest level (level 0).
+   * @returns Configured min clock in MHz, or null if unreadable
+   */
+  async readMinClockLimit(): Promise<number | null> {
+    try {
+      const raw = await Bun.file(join(this.sysfsPath, "pp_od_clk_voltage")).text();
+      return parseMinClockLimit(raw);
     } catch {
       return null;
     }
@@ -130,4 +149,29 @@ function parseClockLimit(odOutput: string): number | null {
     }
   }
   return maxClock;
+}
+
+/**
+ * Parse the configured min clock limit from pp_od_clk_voltage output.
+ * Finds the lowest clock value in the OD_SCLK section (level 0).
+ * @param odOutput - Raw content of the pp_od_clk_voltage sysfs file
+ * @returns Configured min clock in MHz, or null if not parseable
+ */
+function parseMinClockLimit(odOutput: string): number | null {
+  const lines = odOutput.split("\n");
+  let inSclk = false;
+  let minClock: number | null = null;
+
+  for (const line of lines) {
+    if (line.startsWith("OD_SCLK")) { inSclk = true; continue; }
+    if (inSclk && line.match(/^OD_|^\s*$/)) break;
+    if (inSclk) {
+      const match = line.match(/(\d+)\s*[Mm][Hh]z/);
+      if (match) {
+        const mhz = parseInt(match[1], 10);
+        if (minClock === null || mhz < minClock) minClock = mhz;
+      }
+    }
+  }
+  return minClock;
 }

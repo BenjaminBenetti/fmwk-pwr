@@ -210,8 +210,8 @@ export class ProfileManager {
 
     await this.hardware.applyCpuMaxClock(profile.cpu.maxClockMhz);
 
-    if (profile.gpu.clockMhz !== null) {
-      await this.hardware.applyGpuClock(profile.gpu.clockMhz);
+    if (profile.gpu.maxClockMhz !== null || profile.gpu.minClockMhz !== null) {
+      await this.hardware.applyGpuClock(profile.gpu.maxClockMhz, profile.gpu.minClockMhz);
     } else {
       await this.hardware.applyGpuPerfLevel(profile.gpu.perfLevel);
     }
@@ -290,7 +290,16 @@ function validateProfile(raw: unknown): Profile {
     throw new Error("gpu must be an object");
   }
   const gpu = obj.gpu as Record<string, unknown>;
-  validateNullableNumber(gpu.clockMhz, "gpu.clockMhz");
+  // Migration: rename clockMhz → maxClockMhz for backward compatibility
+  if ("clockMhz" in gpu && !("maxClockMhz" in gpu)) {
+    gpu.maxClockMhz = gpu.clockMhz;
+    delete gpu.clockMhz;
+  }
+  if (!("minClockMhz" in gpu)) {
+    gpu.minClockMhz = null;
+  }
+  validateNullableNumber(gpu.maxClockMhz, "gpu.maxClockMhz");
+  validateNullableNumber(gpu.minClockMhz, "gpu.minClockMhz");
   if (
     gpu.perfLevel !== null &&
     gpu.perfLevel !== "auto" &&
@@ -344,7 +353,8 @@ function validateProfile(raw: unknown): Profile {
       maxClockMhz: cpu.maxClockMhz as number | null,
     },
     gpu: {
-      clockMhz: gpu.clockMhz as number | null,
+      maxClockMhz: gpu.maxClockMhz as number | null,
+      minClockMhz: gpu.minClockMhz as number | null,
       perfLevel: gpu.perfLevel as "auto" | "high" | null,
     },
     tunedProfile: obj.tunedProfile as string | null,

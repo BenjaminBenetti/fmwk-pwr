@@ -15,7 +15,7 @@ const DEFAULT_PROFILE: Profile = {
   name: 'new-profile',
   power: { stapmLimit: null, slowLimit: null, fastLimit: null },
   cpu: { maxClockMhz: null },
-  gpu: { clockMhz: null, perfLevel: null },
+  gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
   tunedProfile: null,
   match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
 };

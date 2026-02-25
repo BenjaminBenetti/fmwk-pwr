@@ -12,6 +12,7 @@ export interface HardwareInfo {
   cpuClockMhz: number | null;
   gpuClockMhz: number | null;
   gpuClockLimitMhz: number | null;
+  gpuMinClockLimitMhz: number | null;
   tcpuTemp: number | null;
   cpuPower: number | null;
   gpuPower: number | null;
@@ -33,7 +34,7 @@ export interface Profile {
     slowLimit: number | null;
     fastLimit: number | null;
   };
-  gpu: { clockMhz: number | null; perfLevel: 'auto' | 'high' | null };
+  gpu: { maxClockMhz: number | null; minClockMhz: number | null; perfLevel: 'auto' | 'high' | null };
   tunedProfile: string | null;
   match: { enabled: boolean; processPatterns: string[]; priority: number; revertProfile: string | null };
 }

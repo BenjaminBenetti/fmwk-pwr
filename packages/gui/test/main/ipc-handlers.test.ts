@@ -25,7 +25,7 @@ function makeProfile(name = "test"): Profile {
   return {
     name,
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
-    gpu: { clockMhz: null, perfLevel: null },
+    gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
   };

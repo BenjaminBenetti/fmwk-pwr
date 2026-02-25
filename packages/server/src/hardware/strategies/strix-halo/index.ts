@@ -90,17 +90,18 @@ export class StrixHaloStrategy implements HardwareStrategy {
   // =====================================
 
   /**
-   * Set the GPU clock to a specific frequency.
+   * Set the GPU clock range. Writes min clock first, then max clock, then commits.
    * Automatically switches performance level to "manual" first.
-   * @param clockMhz - Target GPU clock in MHz, or null to skip
+   * @param maxClockMhz - Maximum GPU clock in MHz, or null to skip
+   * @param minClockMhz - Minimum GPU clock in MHz, or null to skip
    */
-  async applyGpuClock(clockMhz: number | null): Promise<void> {
-    if (clockMhz === null) return;
+  async applyGpuClock(maxClockMhz: number | null, minClockMhz: number | null): Promise<void> {
+    if (maxClockMhz === null && minClockMhz === null) return;
     // Must cycle through "auto" first — the amdgpu driver won't accept
     // a direct "high" → "manual" transition.
     await this.gpu.setPerfLevel("auto");
     await this.gpu.setPerfLevel("manual");
-    await this.gpu.setClock(clockMhz);
+    await this.gpu.setClockRange(minClockMhz, maxClockMhz);
   }
 
   /**
@@ -147,12 +148,13 @@ export class StrixHaloStrategy implements HardwareStrategy {
    * @returns Current hardware state including power limits, sensors, and tuned profile
    */
   async readHardwareInfo(): Promise<HardwareInfo> {
-    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, tunedProfile, cpuClockMhz, metricsPower, cpuUsagePercent, gpuUsagePercent] =
+    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, gpuMinClockLimitMhz, tunedProfile, cpuClockMhz, metricsPower, cpuUsagePercent, gpuUsagePercent] =
       await Promise.all([
         this.hwmon.readCpuTemp(),
         this.hwmon.readSocketPower(),
         this.gpu.readCurrentClock(),
         this.gpu.readClockLimit(),
+        this.gpu.readMinClockLimit(),
         this.readTunedProfile(),
         this.hwmon.readCpuClock(),
         this.hwmon.readGpuMetricsPower(),
@@ -169,6 +171,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
       cpuClockMhz,
       gpuClockMhz,
       gpuClockLimitMhz,
+      gpuMinClockLimitMhz,
       tcpuTemp,
       cpuPower: metricsPower.cpuPower,
       gpuPower: metricsPower.gpuPower,
@@ -213,9 +216,19 @@ export class StrixHaloStrategy implements HardwareStrategy {
         errors.push(`CPU clock must be between ${this.hardwareLimits.minCpuClockMhz} and ${this.hardwareLimits.maxCpuClockMhz} MHz`);
       }
     }
-    if (gpu.clockMhz !== null) {
-      if (gpu.clockMhz < this.hardwareLimits.minGpuClockMhz || gpu.clockMhz > this.hardwareLimits.maxGpuClockMhz) {
-        errors.push(`GPU clock must be between ${this.hardwareLimits.minGpuClockMhz} and ${this.hardwareLimits.maxGpuClockMhz} MHz`);
+    if (gpu.maxClockMhz !== null) {
+      if (gpu.maxClockMhz < this.hardwareLimits.minGpuClockMhz || gpu.maxClockMhz > this.hardwareLimits.maxGpuClockMhz) {
+        errors.push(`GPU max clock must be between ${this.hardwareLimits.minGpuClockMhz} and ${this.hardwareLimits.maxGpuClockMhz} MHz`);
+      }
+    }
+    if (gpu.minClockMhz !== null) {
+      if (gpu.minClockMhz < this.hardwareLimits.minGpuClockMhz || gpu.minClockMhz > this.hardwareLimits.maxGpuClockMhz) {
+        errors.push(`GPU min clock must be between ${this.hardwareLimits.minGpuClockMhz} and ${this.hardwareLimits.maxGpuClockMhz} MHz`);
+      }
+    }
+    if (gpu.minClockMhz !== null && gpu.maxClockMhz !== null) {
+      if (gpu.minClockMhz > gpu.maxClockMhz) {
+        errors.push("GPU min clock must be less than or equal to max clock");
       }
     }
 

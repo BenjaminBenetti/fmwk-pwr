@@ -20,7 +20,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
     name: "test",
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
     cpu: { maxClockMhz: null },
-    gpu: { clockMhz: null, perfLevel: null },
+    gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
     ...overrides,
@@ -52,9 +52,14 @@ function validateStrixHaloProfile(profile: Profile, limits: HardwareLimits): str
       errors.push(`CPU clock must be between ${limits.minCpuClockMhz} and ${limits.maxCpuClockMhz} MHz`);
     }
   }
-  if (gpu.clockMhz !== null) {
-    if (gpu.clockMhz < limits.minGpuClockMhz || gpu.clockMhz > limits.maxGpuClockMhz) {
+  if (gpu.maxClockMhz !== null) {
+    if (gpu.maxClockMhz < limits.minGpuClockMhz || gpu.maxClockMhz > limits.maxGpuClockMhz) {
       errors.push(`GPU clock must be between ${limits.minGpuClockMhz} and ${limits.maxGpuClockMhz} MHz`);
+    }
+  }
+  if (gpu.minClockMhz !== null) {
+    if (gpu.minClockMhz < limits.minGpuClockMhz || gpu.minClockMhz > limits.maxGpuClockMhz) {
+      errors.push(`GPU min clock must be between ${limits.minGpuClockMhz} and ${limits.maxGpuClockMhz} MHz`);
     }
   }
 
@@ -190,7 +195,7 @@ describe("Strix Halo profile validation", () => {
 
     test("GPU clock at minimum boundary (200) is valid", () => {
       const errors = validateStrixHaloProfile(
-        makeProfile({ gpu: { clockMhz: 200, perfLevel: null } }),
+        makeProfile({ gpu: { maxClockMhz: 200, minClockMhz: null, perfLevel: null } }),
         defaultLimits,
       );
       expect(errors).toHaveLength(0);
@@ -198,7 +203,7 @@ describe("Strix Halo profile validation", () => {
 
     test("GPU clock at maximum boundary (3000) is valid", () => {
       const errors = validateStrixHaloProfile(
-        makeProfile({ gpu: { clockMhz: 3000, perfLevel: null } }),
+        makeProfile({ gpu: { maxClockMhz: 3000, minClockMhz: null, perfLevel: null } }),
         defaultLimits,
       );
       expect(errors).toHaveLength(0);
@@ -206,7 +211,7 @@ describe("Strix Halo profile validation", () => {
 
     test("GPU clock below minimum is invalid", () => {
       const errors = validateStrixHaloProfile(
-        makeProfile({ gpu: { clockMhz: 100, perfLevel: null } }),
+        makeProfile({ gpu: { maxClockMhz: 100, minClockMhz: null, perfLevel: null } }),
         defaultLimits,
       );
       expect(errors).toHaveLength(1);
@@ -217,7 +222,7 @@ describe("Strix Halo profile validation", () => {
 
     test("GPU clock above maximum is invalid", () => {
       const errors = validateStrixHaloProfile(
-        makeProfile({ gpu: { clockMhz: 3500, perfLevel: null } }),
+        makeProfile({ gpu: { maxClockMhz: 3500, minClockMhz: null, perfLevel: null } }),
         defaultLimits,
       );
       expect(errors).toHaveLength(1);
@@ -227,7 +232,7 @@ describe("Strix Halo profile validation", () => {
     test("typical GPU clock values are valid", () => {
       for (const mhz of [500, 1000, 1500, 2000, 2500, 2700]) {
         const errors = validateStrixHaloProfile(
-          makeProfile({ gpu: { clockMhz: mhz, perfLevel: null } }),
+          makeProfile({ gpu: { maxClockMhz: mhz, minClockMhz: null, perfLevel: null } }),
           defaultLimits,
         );
         expect(errors).toHaveLength(0);
@@ -283,7 +288,7 @@ describe("Strix Halo profile validation", () => {
       const errors = validateStrixHaloProfile(
         makeProfile({
           power: { stapmLimit: 100000, slowLimit: 120000, fastLimit: 150000 },
-          gpu: { clockMhz: 2500, perfLevel: null },
+          gpu: { maxClockMhz: 2500, minClockMhz: null, perfLevel: null },
           match: {
             enabled: true,
             processPatterns: ["steam", "lutris"],
@@ -300,7 +305,7 @@ describe("Strix Halo profile validation", () => {
       const errors = validateStrixHaloProfile(
         makeProfile({
           power: { stapmLimit: 1000, slowLimit: 200000, fastLimit: null },
-          gpu: { clockMhz: 50, perfLevel: null },
+          gpu: { maxClockMhz: 50, minClockMhz: null, perfLevel: null },
           match: {
             enabled: true,
             processPatterns: ["[bad"],
@@ -343,8 +348,8 @@ describe("Strix Halo profile validation", () => {
 // "auto" -> "manual" transition that works around an amdgpu driver limitation.
 
 interface GpuCall {
-  method: "setPerfLevel" | "setClock";
-  arg: string | number;
+  method: "setPerfLevel" | "setClockRange";
+  arg: string | { min: number | null; max: number | null };
 }
 
 /**
@@ -357,26 +362,27 @@ function createMockGpu() {
     async setPerfLevel(level: string) {
       calls.push({ method: "setPerfLevel", arg: level });
     },
-    async setClock(mhz: number) {
-      calls.push({ method: "setClock", arg: mhz });
+    async setClockRange(minMhz: number | null, maxMhz: number | null) {
+      calls.push({ method: "setClockRange", arg: { min: minMhz, max: maxMhz } });
     },
   };
 }
 
 /**
  * Replicate StrixHaloStrategy.applyGpuClock for testing.
- * This must match the production implementation in index.ts lines 75-82.
+ * This must match the production implementation in index.ts.
  */
 async function applyGpuClock(
   gpu: ReturnType<typeof createMockGpu>,
-  clockMhz: number | null,
+  maxClockMhz: number | null,
+  minClockMhz: number | null,
 ): Promise<void> {
-  if (clockMhz === null) return;
+  if (maxClockMhz === null && minClockMhz === null) return;
   // Must cycle through "auto" first — the amdgpu driver won't accept
   // a direct "high" → "manual" transition.
   await gpu.setPerfLevel("auto");
   await gpu.setPerfLevel("manual");
-  await gpu.setClock(clockMhz);
+  await gpu.setClockRange(minClockMhz, maxClockMhz);
 }
 
 /**
@@ -399,19 +405,19 @@ describe("Strix Halo GPU perf level transitions", () => {
   });
 
   describe("applyGpuClock", () => {
-    test("cycles through auto before setting manual and clock", async () => {
-      await applyGpuClock(gpu, 2500);
+    test("cycles through auto before setting manual and clock range", async () => {
+      await applyGpuClock(gpu, 2500, null);
 
       expect(gpu.calls).toHaveLength(3);
       expect(gpu.calls[0]).toEqual({ method: "setPerfLevel", arg: "auto" });
       expect(gpu.calls[1]).toEqual({ method: "setPerfLevel", arg: "manual" });
-      expect(gpu.calls[2]).toEqual({ method: "setClock", arg: 2500 });
+      expect(gpu.calls[2]).toEqual({ method: "setClockRange", arg: { min: null, max: 2500 } });
     });
 
     test("sets auto first to handle high-to-manual driver limitation", async () => {
       // The amdgpu driver rejects direct "high" -> "manual" transitions.
       // applyGpuClock must always go through "auto" as an intermediate step.
-      await applyGpuClock(gpu, 1800);
+      await applyGpuClock(gpu, 1800, null);
 
       // First call must be "auto", NOT "manual"
       expect(gpu.calls[0].method).toBe("setPerfLevel");
@@ -421,35 +427,44 @@ describe("Strix Halo GPU perf level transitions", () => {
       expect(gpu.calls[1].arg).toBe("manual");
     });
 
-    test("does nothing when clockMhz is null", async () => {
-      await applyGpuClock(gpu, null);
+    test("does nothing when both clocks are null", async () => {
+      await applyGpuClock(gpu, null, null);
       expect(gpu.calls).toHaveLength(0);
     });
 
-    test("sets clock after perf level transitions", async () => {
-      await applyGpuClock(gpu, 600);
+    test("sets clock range after perf level transitions", async () => {
+      await applyGpuClock(gpu, 600, null);
 
-      // setClock must come after both setPerfLevel calls
-      const clockCall = gpu.calls.find((c) => c.method === "setClock");
+      // setClockRange must come after both setPerfLevel calls
+      const clockCall = gpu.calls.find((c) => c.method === "setClockRange");
       expect(clockCall).toBeDefined();
-      expect(clockCall!.arg).toBe(600);
+      expect(clockCall!.arg).toEqual({ min: null, max: 600 });
 
       const clockIndex = gpu.calls.indexOf(clockCall!);
       expect(clockIndex).toBe(2); // Must be the last call
     });
 
-    test("works with minimum GPU clock value", async () => {
-      await applyGpuClock(gpu, 200);
+    test("passes both min and max in single setClockRange call", async () => {
+      await applyGpuClock(gpu, 2500, 500);
 
       expect(gpu.calls).toHaveLength(3);
-      expect(gpu.calls[2]).toEqual({ method: "setClock", arg: 200 });
+      expect(gpu.calls[0]).toEqual({ method: "setPerfLevel", arg: "auto" });
+      expect(gpu.calls[1]).toEqual({ method: "setPerfLevel", arg: "manual" });
+      expect(gpu.calls[2]).toEqual({ method: "setClockRange", arg: { min: 500, max: 2500 } });
+    });
+
+    test("works with minimum GPU clock value", async () => {
+      await applyGpuClock(gpu, 200, null);
+
+      expect(gpu.calls).toHaveLength(3);
+      expect(gpu.calls[2]).toEqual({ method: "setClockRange", arg: { min: null, max: 200 } });
     });
 
     test("works with maximum GPU clock value", async () => {
-      await applyGpuClock(gpu, 3000);
+      await applyGpuClock(gpu, 3000, null);
 
       expect(gpu.calls).toHaveLength(3);
-      expect(gpu.calls[2]).toEqual({ method: "setClock", arg: 3000 });
+      expect(gpu.calls[2]).toEqual({ method: "setClockRange", arg: { min: null, max: 3000 } });
     });
   });
 
@@ -478,13 +493,13 @@ describe("Strix Halo GPU perf level transitions", () => {
     test("applying clock after perf level auto produces correct sequence", async () => {
       // Simulate: first apply "auto" perf level, then apply a clock
       await applyGpuPerfLevel(gpu, "auto");
-      await applyGpuClock(gpu, 2000);
+      await applyGpuClock(gpu, 2000, null);
 
       expect(gpu.calls).toEqual([
         { method: "setPerfLevel", arg: "auto" },
         { method: "setPerfLevel", arg: "auto" },
         { method: "setPerfLevel", arg: "manual" },
-        { method: "setClock", arg: 2000 },
+        { method: "setClockRange", arg: { min: null, max: 2000 } },
       ]);
     });
 
@@ -493,14 +508,14 @@ describe("Strix Halo GPU perf level transitions", () => {
       // This is the scenario the fix addresses — without the auto
       // intermediate step, the "high" -> "manual" transition would fail.
       await applyGpuPerfLevel(gpu, "high");
-      await applyGpuClock(gpu, 2500);
+      await applyGpuClock(gpu, 2500, null);
 
       expect(gpu.calls).toEqual([
         { method: "setPerfLevel", arg: "high" },
         // applyGpuClock resets to "auto" first to avoid high->manual failure
         { method: "setPerfLevel", arg: "auto" },
         { method: "setPerfLevel", arg: "manual" },
-        { method: "setClock", arg: 2500 },
+        { method: "setClockRange", arg: { min: null, max: 2500 } },
       ]);
     });
   });

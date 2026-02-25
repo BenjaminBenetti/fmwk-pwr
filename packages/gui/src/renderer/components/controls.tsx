@@ -116,6 +116,125 @@ export function CustomSlider({ value, min, max, step, disabled, onChange }: {
   );
 }
 
+export function RangeSlider({ low, high, min, max, step, disabled, onChange }: {
+  low: number; high: number; min: number; max: number; step: number; disabled: boolean;
+  onChange: (low: number, high: number) => void;
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  const clampToStep = useCallback((raw: number) => {
+    const stepped = Math.round(raw / step) * step;
+    return Math.max(min, Math.min(max, stepped));
+  }, [min, max, step]);
+
+  const lowFrac = (low - min) / (max - min);
+  const highFrac = (high - min) / (max - min);
+
+  const calcValue = useCallback((clientX: number) => {
+    const track = trackRef.current;
+    if (!track) return min;
+    const rect = track.getBoundingClientRect();
+    const ratio = (clientX - rect.left) / rect.width;
+    return clampToStep(min + ratio * (max - min));
+  }, [min, max, clampToStep]);
+
+  const handleMouseDown = useCallback((e: MouseEvent) => {
+    if (disabled) return;
+    e.preventDefault();
+    const clickVal = calcValue(e.clientX);
+
+    // Determine which thumb is closer
+    const distLow = Math.abs(clickVal - low);
+    const distHigh = Math.abs(clickVal - high);
+    const dragging = distLow <= distHigh ? 'low' : 'high';
+
+    const update = (val: number) => {
+      if (dragging === 'low') {
+        onChange(Math.min(val, high), high);
+      } else {
+        onChange(low, Math.max(val, low));
+      }
+    };
+
+    update(clickVal);
+
+    const handleMouseMove = (ev: globalThis.MouseEvent) => {
+      update(calcValue(ev.clientX));
+    };
+    const handleMouseUp = () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [disabled, calcValue, onChange, low, high]);
+
+  return (
+    <div
+      onMouseDown={handleMouseDown}
+      style={{
+        position: 'relative',
+        width: '100%',
+        padding: '5px 8px',
+        boxSizing: 'border-box',
+        cursor: disabled ? 'default' : 'pointer',
+        opacity: disabled ? 0.3 : 1,
+      }}
+    >
+      <div
+        ref={trackRef}
+        style={{
+          position: 'relative',
+          width: '100%',
+          height: 6,
+          background: 'var(--slider-track)',
+        }}
+      >
+        {/* Fill bar between low and high */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: `${lowFrac * 100}%`,
+            width: `${(highFrac - lowFrac) * 100}%`,
+            height: 6,
+            background: 'var(--slider-gradient)',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* Low thumb */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -5,
+            left: `${lowFrac * 100}%`,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            background: 'var(--slider-thumb)',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+          }}
+        />
+        {/* High thumb */}
+        <div
+          style={{
+            position: 'absolute',
+            top: -5,
+            left: `${highFrac * 100}%`,
+            width: 16,
+            height: 16,
+            borderRadius: '50%',
+            background: 'var(--slider-thumb)',
+            transform: 'translateX(-50%)',
+            pointerEvents: 'none',
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 interface DropdownOption {
   value: string;
   label: string;
