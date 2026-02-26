@@ -1,5 +1,5 @@
 import type { Profile, HardwareLimits, HardwareInfo } from '../types';
-import { Checkbox, CustomSlider, Dropdown } from './controls';
+import { Checkbox, RangeSlider, Dropdown } from './controls';
 
 interface CpuControlsProps {
   cpu: Profile['cpu'];
@@ -26,10 +26,13 @@ const TUNED_OPTIONS = [
 ];
 
 export function CpuControls({ cpu, tunedProfile, hardwareLimits, hwInfo, expanded, onToggleExpanded, onChange, onTunedProfileChange }: CpuControlsProps) {
-  const clockEnabled = cpu.maxClockMhz !== null;
-  const clockVal = clockEnabled
-    ? cpu.maxClockMhz!
-    : hardwareLimits.maxCpuClockMhz;
+  const clockEnabled = cpu.maxClockMhz !== null || cpu.minClockMhz !== null;
+  const highVal = clockEnabled
+    ? (cpu.maxClockMhz ?? hardwareLimits.maxCpuClockMhz)
+    : hardwareLimits.minCpuClockMhz;
+  const lowVal = clockEnabled
+    ? (cpu.minClockMhz ?? hardwareLimits.minCpuClockMhz)
+    : hardwareLimits.minCpuClockMhz;
 
   if (!expanded) {
     return (
@@ -54,25 +57,26 @@ export function CpuControls({ cpu, tunedProfile, hardwareLimits, hwInfo, expande
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Checkbox
               checked={clockEnabled}
-              onChange={(v) => onChange({ maxClockMhz: v ? hardwareLimits.maxCpuClockMhz : null })}
+              onChange={(v) => onChange({ minClockMhz: v ? hardwareLimits.minCpuClockMhz : null, maxClockMhz: v ? hardwareLimits.maxCpuClockMhz : null })}
             />
             <span style={{ fontFamily: 'var(--font)', fontSize: 13, color: 'var(--text-primary)' }}>
-              max_clock
+              cpu_clock
             </span>
           </div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: 12, color: 'var(--text-dim)' }}>
             {clockEnabled
-              ? `${clockVal} mhz / ${hardwareLimits.maxCpuClockMhz} mhz`
+              ? `${lowVal} — ${highVal} mhz`
               : '\u2014'}
           </span>
         </div>
-        <CustomSlider
-          value={clockVal}
+        <RangeSlider
+          low={lowVal}
+          high={highVal}
           min={hardwareLimits.minCpuClockMhz}
           max={hardwareLimits.maxCpuClockMhz}
           step={100}
           disabled={!clockEnabled}
-          onChange={(v) => onChange({ maxClockMhz: v })}
+          onChange={(lo, hi) => onChange({ minClockMhz: lo, maxClockMhz: hi })}
         />
       </div>
 

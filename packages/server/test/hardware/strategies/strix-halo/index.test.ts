@@ -19,7 +19,7 @@ function makeProfile(overrides: Partial<Profile> = {}): Profile {
   return {
     name: "test",
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
-    cpu: { maxClockMhz: null },
+    cpu: { maxClockMhz: null, minClockMhz: null },
     gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },
@@ -60,6 +60,16 @@ function validateStrixHaloProfile(profile: Profile, limits: HardwareLimits): str
   if (gpu.minClockMhz !== null) {
     if (gpu.minClockMhz < limits.minGpuClockMhz || gpu.minClockMhz > limits.maxGpuClockMhz) {
       errors.push(`GPU min clock must be between ${limits.minGpuClockMhz} and ${limits.maxGpuClockMhz} MHz`);
+    }
+  }
+  if (cpu.minClockMhz !== null) {
+    if (cpu.minClockMhz < limits.minCpuClockMhz || cpu.minClockMhz > limits.maxCpuClockMhz) {
+      errors.push(`CPU min clock must be between ${limits.minCpuClockMhz} and ${limits.maxCpuClockMhz} MHz`);
+    }
+  }
+  if (cpu.minClockMhz !== null && cpu.maxClockMhz !== null) {
+    if (cpu.minClockMhz > cpu.maxClockMhz) {
+      errors.push("CPU min clock must be less than or equal to max clock");
     }
   }
 
@@ -237,6 +247,69 @@ describe("Strix Halo profile validation", () => {
         );
         expect(errors).toHaveLength(0);
       }
+    });
+  });
+
+  describe("CPU min clock", () => {
+    test("null CPU min clock is valid", () => {
+      const errors = validateStrixHaloProfile(makeProfile(), defaultLimits);
+      expect(errors).toHaveLength(0);
+    });
+
+    test("cpu.minClockMhz at boundaries is valid", () => {
+      const errorsLow = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: null, minClockMhz: 400 } }),
+        defaultLimits,
+      );
+      const errorsHigh = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: null, minClockMhz: 5500 } }),
+        defaultLimits,
+      );
+      expect(errorsLow).toHaveLength(0);
+      expect(errorsHigh).toHaveLength(0);
+    });
+
+    test("cpu.minClockMhz out of range is invalid", () => {
+      const errorsLow = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: null, minClockMhz: 300 } }),
+        defaultLimits,
+      );
+      expect(errorsLow).toHaveLength(1);
+      expect(errorsLow[0]).toContain("CPU min clock");
+      expect(errorsLow[0]).toContain(`${defaultLimits.minCpuClockMhz}`);
+      expect(errorsLow[0]).toContain(`${defaultLimits.maxCpuClockMhz}`);
+
+      const errorsHigh = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: null, minClockMhz: 6000 } }),
+        defaultLimits,
+      );
+      expect(errorsHigh).toHaveLength(1);
+      expect(errorsHigh[0]).toContain("CPU min clock");
+    });
+
+    test("cpu.minClockMhz > cpu.maxClockMhz is invalid", () => {
+      const errors = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: 2000, minClockMhz: 3000 } }),
+        defaultLimits,
+      );
+      expect(errors).toHaveLength(1);
+      expect(errors[0]).toContain("CPU min clock must be less than or equal to max clock");
+    });
+
+    test("cpu.minClockMhz <= cpu.maxClockMhz is valid", () => {
+      const errors = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: 3000, minClockMhz: 2000 } }),
+        defaultLimits,
+      );
+      expect(errors).toHaveLength(0);
+    });
+
+    test("cpu.minClockMhz equal to cpu.maxClockMhz is valid", () => {
+      const errors = validateStrixHaloProfile(
+        makeProfile({ cpu: { maxClockMhz: 3000, minClockMhz: 3000 } }),
+        defaultLimits,
+      );
+      expect(errors).toHaveLength(0);
     });
   });
 

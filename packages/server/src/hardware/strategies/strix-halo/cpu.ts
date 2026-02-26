@@ -29,10 +29,29 @@ export class CpuController {
     );
   }
 
+  async setMinClock(mhz: number): Promise<void> {
+    const khz = String(mhz * 1000);
+    await Promise.all(
+      this.corePaths.map((p) => Bun.write(join(p, "scaling_min_freq"), khz)),
+    );
+  }
+
   async readMaxClock(): Promise<number | null> {
     if (this.corePaths.length === 0) return null;
     try {
       const raw = await Bun.file(join(this.corePaths[0], "scaling_max_freq")).text();
+      const khz = parseInt(raw.trim(), 10);
+      if (isNaN(khz)) return null;
+      return Math.round(khz / 1000);
+    } catch {
+      return null;
+    }
+  }
+
+  async readMinClock(): Promise<number | null> {
+    if (this.corePaths.length === 0) return null;
+    try {
+      const raw = await Bun.file(join(this.corePaths[0], "scaling_min_freq")).text();
       const khz = parseInt(raw.trim(), 10);
       if (isNaN(khz)) return null;
       return Math.round(khz / 1000);

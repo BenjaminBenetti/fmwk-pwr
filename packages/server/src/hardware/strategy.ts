@@ -32,11 +32,13 @@ export interface HardwareStrategy {
   ): void;
 
   /**
-   * Set the maximum CPU clock frequency via cpufreq.
-   * Pass null to skip (no change).
-   * @param maxClockMhz - Maximum CPU clock in MHz
+   * Set the CPU clock frequency range via cpufreq.
+   * Writes max first, then min (kernel rejects min > current max).
+   * Pass null for either parameter to skip (no change).
+   * @param maxClockMhz - Maximum CPU clock in MHz, or null to skip
+   * @param minClockMhz - Minimum CPU clock in MHz, or null to skip
    */
-  applyCpuMaxClock(maxClockMhz: number | null): Promise<void>;
+  applyCpuClock(maxClockMhz: number | null, minClockMhz: number | null): Promise<void>;
 
   /**
    * Set the GPU clock range. Implies "manual" performance level.

@@ -21,6 +21,8 @@ export interface Profile {
   cpu: {
     /** Maximum CPU clock frequency in MHz, or null to leave unmanaged. */
     maxClockMhz: number | null;
+    /** Minimum CPU clock frequency in MHz, or null to leave unmanaged. */
+    minClockMhz: number | null;
   };
   /** GPU configuration applied via amdgpu sysfs. */
   gpu: {

@@ -5,7 +5,7 @@ import { PatternMatcher } from "../../src/watcher/pattern-matcher.js";
 function makeProfile(overrides: Partial<Profile> & { name: string }): Profile {
   return {
     power: { stapmLimit: null, slowLimit: null, fastLimit: null },
-    cpu: { maxClockMhz: null },
+    cpu: { maxClockMhz: null, minClockMhz: null },
     gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
     tunedProfile: null,
     match: { enabled: true, processPatterns: [], priority: 0, revertProfile: null },

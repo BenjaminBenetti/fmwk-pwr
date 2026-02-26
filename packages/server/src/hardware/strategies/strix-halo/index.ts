@@ -77,12 +77,15 @@ export class StrixHaloStrategy implements HardwareStrategy {
   // =====================================
 
   /**
-   * Set the maximum CPU clock frequency via cpufreq.
+   * Set the CPU clock frequency range via cpufreq.
+   * Writes max first, then min (kernel rejects min > current max).
    * @param maxClockMhz - Maximum CPU clock in MHz, or null to skip
+   * @param minClockMhz - Minimum CPU clock in MHz, or null to skip
    */
-  async applyCpuMaxClock(maxClockMhz: number | null): Promise<void> {
-    if (maxClockMhz === null) return;
-    await this.cpu.setMaxClock(maxClockMhz);
+  async applyCpuClock(maxClockMhz: number | null, minClockMhz: number | null): Promise<void> {
+    if (maxClockMhz === null && minClockMhz === null) return;
+    if (maxClockMhz !== null) await this.cpu.setMaxClock(maxClockMhz);
+    if (minClockMhz !== null) await this.cpu.setMinClock(minClockMhz);
   }
 
   // =====================================
@@ -148,7 +151,7 @@ export class StrixHaloStrategy implements HardwareStrategy {
    * @returns Current hardware state including power limits, sensors, and tuned profile
    */
   async readHardwareInfo(): Promise<HardwareInfo> {
-    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, gpuMinClockLimitMhz, tunedProfile, cpuClockMhz, metricsPower, cpuUsagePercent, gpuUsagePercent] =
+    const [tcpuTemp, socketPower, gpuClockMhz, gpuClockLimitMhz, gpuMinClockLimitMhz, tunedProfile, cpuClockMhz, cpuMaxClockLimitMhz, cpuMinClockLimitMhz, metricsPower, cpuUsagePercent, gpuUsagePercent] =
       await Promise.all([
         this.hwmon.readCpuTemp(),
         this.hwmon.readSocketPower(),
@@ -157,6 +160,8 @@ export class StrixHaloStrategy implements HardwareStrategy {
         this.gpu.readMinClockLimit(),
         this.readTunedProfile(),
         this.hwmon.readCpuClock(),
+        this.cpu.readMaxClock(),
+        this.cpu.readMinClock(),
         this.hwmon.readGpuMetricsPower(),
         this.hwmon.readCpuUsage(),
         this.hwmon.readGpuUsage(),
@@ -169,6 +174,8 @@ export class StrixHaloStrategy implements HardwareStrategy {
       slowLimit: limits.slow,
       fastLimit: limits.fast,
       cpuClockMhz,
+      cpuMaxClockLimitMhz,
+      cpuMinClockLimitMhz,
       gpuClockMhz,
       gpuClockLimitMhz,
       gpuMinClockLimitMhz,
@@ -213,7 +220,17 @@ export class StrixHaloStrategy implements HardwareStrategy {
     }
     if (cpu.maxClockMhz !== null) {
       if (cpu.maxClockMhz < this.hardwareLimits.minCpuClockMhz || cpu.maxClockMhz > this.hardwareLimits.maxCpuClockMhz) {
-        errors.push(`CPU clock must be between ${this.hardwareLimits.minCpuClockMhz} and ${this.hardwareLimits.maxCpuClockMhz} MHz`);
+        errors.push(`CPU max clock must be between ${this.hardwareLimits.minCpuClockMhz} and ${this.hardwareLimits.maxCpuClockMhz} MHz`);
+      }
+    }
+    if (cpu.minClockMhz !== null) {
+      if (cpu.minClockMhz < this.hardwareLimits.minCpuClockMhz || cpu.minClockMhz > this.hardwareLimits.maxCpuClockMhz) {
+        errors.push(`CPU min clock must be between ${this.hardwareLimits.minCpuClockMhz} and ${this.hardwareLimits.maxCpuClockMhz} MHz`);
+      }
+    }
+    if (cpu.minClockMhz !== null && cpu.maxClockMhz !== null) {
+      if (cpu.minClockMhz > cpu.maxClockMhz) {
+        errors.push("CPU min clock must be less than or equal to max clock");
       }
     }
     if (gpu.maxClockMhz !== null) {

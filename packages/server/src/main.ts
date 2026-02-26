@@ -47,7 +47,7 @@ async function main(): Promise<void> {
     await profileManager.create({
       name: config.defaultProfile,
       power: { stapmLimit: null, slowLimit: null, fastLimit: null },
-      cpu: { maxClockMhz: null },
+      cpu: { maxClockMhz: null, minClockMhz: null },
       gpu: { maxClockMhz: null, minClockMhz: null, perfLevel: null },
       tunedProfile: null,
       match: { enabled: false, processPatterns: [], priority: 0, revertProfile: null },

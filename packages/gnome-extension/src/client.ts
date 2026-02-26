@@ -13,6 +13,8 @@ export interface HardwareInfo {
   gpuClockMhz: number | null;
   gpuClockLimitMhz: number | null;
   gpuMinClockLimitMhz: number | null;
+  cpuMaxClockLimitMhz: number | null;
+  cpuMinClockLimitMhz: number | null;
   tcpuTemp: number | null;
   cpuPower: number | null;
   gpuPower: number | null;

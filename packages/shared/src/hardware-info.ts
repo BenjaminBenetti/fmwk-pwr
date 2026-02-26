@@ -26,6 +26,10 @@ export interface HardwareInfo {
   gpuPower: number | null;
   /** Total socket (APU) power draw in mW, or null if unavailable. */
   socketPower: number | null;
+  /** Configured max CPU clock limit in MHz from scaling_max_freq, or null if unavailable. */
+  cpuMaxClockLimitMhz: number | null;
+  /** Configured min CPU clock limit in MHz from scaling_min_freq, or null if unavailable. */
+  cpuMinClockLimitMhz: number | null;
   /** CPU utilization percentage (0-100), or null if unavailable. */
   cpuUsagePercent: number | null;
   /** GPU utilization percentage (0-100), or null if unavailable. */
